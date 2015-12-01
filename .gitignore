@@ -1,0 +1,5 @@
+*~
+node_modules
+.fw4ex.json
+spec/vmauth-data.json
+spec/vmauthor-data.js

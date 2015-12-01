@@ -1,0 +1,45 @@
+{
+  "name": "codegradxagent",
+  "version": "1.0.0",
+  "description": "Command line script to interact with the CodeGradX infrastructure.",
+  "keywords": [
+    "CodeGradX",
+    "command line",
+    "Infrastructure for mechanically grading programs",
+    "Paracamplus"
+  ],
+  "main": "codegradxagent.js",
+  "scripts": {
+    "test": "jasmine"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ChristianQueinnec/CodeGradXagent.git"
+  },
+  "dependencies": {
+    "lodash": "^3.10.1",
+    "when": "^3.7.4",
+    "codegradxlib": "^1.0",
+    "node-getopt": "^0.2"
+  },
+  "devDependencies": {
+    "jasmine": "^2.3.2",
+    "jsdoc": "^3.3",
+    "jshint": "^2.8"
+  },
+  "author": {
+    "name": "Christian Queinnec",
+    "email": "Christian.Queinnec@paracamplus.com",
+    "url": "http://christian.queinnec.org/"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "http://opensource.org/licenses/MIT"
+    }
+  ],
+  "bugs": {
+    "url": "https://github.com/ChristianQueinnec/CodeGradXagent/issues"
+  },
+  "homepage": "https://github.com/ChristianQueinnec/CodeGradXagent#readme"
+}
