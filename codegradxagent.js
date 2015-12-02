@@ -144,7 +144,7 @@ CodeGradX.Agent.prototype.processAuthentication = function (strings) {
     }
     
     function couldNotAuthenticate (reason) {
-        agent.state.debug("Failed authentication", reason).show();
+        agent.state.debug("Failed authentication", reason);
         return when.reject(reason);
     }
 
@@ -158,12 +158,21 @@ CodeGradX.Agent.prototype.processAuthentication = function (strings) {
 
     // --credentials= designates a configuration file:
     } else if ( commands.options.credentials ) {
-        CodeGradX.readFileContent(commands.options.credentials).then(
+        return CodeGradX.readFileContent(commands.options.credentials).then(
             function (content) {
                 agent.state.debug("Read " + commands.options.credentials);
                 agent.credentials = JSON.parse(content);
-                // A cookie is present:
-                if ( agent.credentials.cookie ) {
+                // A user and its password are present:
+                if ( agent.credentials.user &&
+                     agent.credentials.password ) {
+                    agent.state.debug("Using user+password");
+                    return agent.state.getAuthenticatedUser(
+                        agent.credentials.user,
+                        agent.credentials.password )
+                        .then(updateCredentials, couldNotAuthenticate);
+
+                // But a cookie may be present:
+                } else if ( agent.credentials.cookie ) {
                     agent.state.debug("Using cookie");
                     agent.state.currentCookie = agent.credentials.cookie;
                     return agent.state.getAuthenticatedUser(
@@ -171,14 +180,6 @@ CodeGradX.Agent.prototype.processAuthentication = function (strings) {
                         agent.credentials.password )
                         .then(updateCredentials, couldNotAuthenticate);
 
-                // A user and its password are present:
-                } else if ( agent.credentials.user &&
-                            agent.credentials.password ) {
-                    agent.state.debug("Using user+password");
-                    return agent.state.getAuthenticatedUser(
-                        agent.credentials.user,
-                        agent.credentials.password )
-                        .then(updateCredentials, couldNotAuthenticate);
                 } else {
                     var error1 = new Error("Could not authenticate");
                     return couldNotAuthenticate(error1);
