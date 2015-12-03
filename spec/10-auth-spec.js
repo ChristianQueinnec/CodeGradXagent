@@ -1,6 +1,6 @@
 // test authentication wrt vmauthor
 
-var CodeGradX = require('codegradxlib');
+var CodeGradX = require('../codegradxlib.js');
 var Agent = require('../codegradxagent.js');
 var vmauthor = require('./vmauthor-data.js');
 var vmauthData = require('./vmauth-data.json');
@@ -20,7 +20,7 @@ describe("CodeGradXagent authentication", function () {
 
     function make_faildone (done) {
         return function faildone (reason) {
-            agent.state.debug(reason).show();
+            //agent.state.debug(reason).show();
             //console.log(reason);
             fail(reason);
             done();
@@ -70,6 +70,20 @@ describe("CodeGradXagent authentication", function () {
         }, faildone);
     }, 10*1000); // 10 seconds
 
+    it("with user but wrong password", function (done) {
+        agent = new CodeGradX.Agent(initializer);
+        var faildone = make_faildone(done);
+        agent.state.log.size = 100;
+        agent.processAuthentication([
+            "--user",     vmauthData.login,
+            "--password", '123456WrongPassword'
+        ]).then(faildone, function (reason) {
+            //agent.state.log.show();
+            expect(reason).toBeDefined();
+            done();
+        });
+    }, 10*1000); // 10 seconds
+
     it("with credentials with cookie", function (done) {
         agent = new CodeGradX.Agent(initializer);
         var faildone = make_faildone(done);
@@ -115,7 +129,7 @@ describe("CodeGradXagent authentication", function () {
                     expect(user).toBeDefined();
                     done();
                 }, faildone);
-            });
+            }, faildone);
     }, 10*1000); // 10 seconds
 
     it("cannot authenticate with wrong credentials", function (done) {

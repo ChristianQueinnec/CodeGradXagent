@@ -1,6 +1,6 @@
 // 
 
-var CodeGradX = require('codegradxlib');
+var CodeGradX = require('../codegradxlib.js');
 var Agent = require('../codegradxagent.js');
 
 describe("CodeGradXagent", function () {
@@ -19,7 +19,7 @@ describe("CodeGradXagent", function () {
     }
 
     it("displays help", function (done) {
-        agent = new CodeGradX.Agent();
+        var agent = new CodeGradX.Agent();
         var faildone = make_faildone(done);
         spyOn(agent, "usage");
         agent.processAuthentication([
@@ -31,7 +31,7 @@ describe("CodeGradXagent", function () {
     });
 
     it("cannot read absent credentials", function (done) {
-        agent = new CodeGradX.Agent();
+        var agent = new CodeGradX.Agent();
         var faildone = make_faildone(done);
         agent.processAuthentication([
             "--credentials", "spec/absentCredentials.json"

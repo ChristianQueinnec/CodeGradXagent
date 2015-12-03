@@ -24,7 +24,7 @@ var getopt = require('node-getopt');
 var fs = require('fs');
 var when = require('when');
 var nodefn = require('when/node');
-var CodeGradX = require('codegradxlib');
+var CodeGradX = require('./codegradxlib.js');
 
 CodeGradX.Agent = function (initializer) {
     this.state = new CodeGradX.State();
@@ -89,14 +89,7 @@ CodeGradX.Agent.prototype.usage = function () {
 */
 
 CodeGradX.writeFileContent = function (filename, data) {
-    return nodefn.call(fs.writeFile, filename, data)
-    .then(function (err, result) {
-           if ( err ) {
-               return when.reject(err);
-           } else {
-               return when(result);
-           }
-    });
+    return nodefn.call(fs.writeFile, filename, data);
 };
 
 /** 
