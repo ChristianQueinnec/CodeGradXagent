@@ -24,6 +24,7 @@ var getopt = require('node-getopt');
 var fs = require('fs');
 var when = require('when');
 var nodefn = require('when/node');
+var _ = require('lodash');
 var CodeGradX = require('./codegradxlib.js');
 
 CodeGradX.Agent = function (initializer) {
@@ -47,33 +48,39 @@ CodeGradX.Agent = function (initializer) {
         ['',   'send',                  "really request servers"]
     ];
     this.parser = getopt.create(this.configuration);
-    // .bindHelp() forces the process to exit!
+    // .bindHelp() forces the process to exit after displaying help!
     this.credentialsFile = './.fw4ex.json';
+    this.startTime = _.now();
+    this.xmldir = '.';
+    this.counter = 0;
+    var agent = this;
+    if ( _.isFunction(initializer) ) {
+        agent = initializer.call(agent, agent);
+    }
+    CodeGradX.getCurrentAgent = function () {
+        return agent;
+    }
     // Customize
     if ( initializer ) {
         initializer(this);
     }
 }
 
-CodeGradX.Agent.prototype.exit = function (code) {
-    process.exit(code || 0);
+/** Get the current agent (if defined)
+
+    @returns {Agent}
+    @property {object} Agent.commands 
+    @property {Hashtable} Agent.commands.options - option name is the key
+    @property {object} Agent.commands.argv - remaining files
+
+*/
+
+CodeGradX.getCurrentAgent = function () {
+    throw new Error("no Agent");
 }
 
-CodeGradX.Agent.prototype.getOptions = function (strings) {
-    var commands = {
-        options: {
-            "send": false
-        }
-    };
-    if ( strings ) {
-        commands = this.parser.parse(strings);
-    } else {
-        commands = this.parser.parseSystem();
-    }
-    //console.log(commands);
-    this.commands = commands;
-    return commands;
-}
+/** Display a short summary of this script.
+*/
 
 CodeGradX.Agent.prototype.usage = function () {
     console.log("to be done from a file");
@@ -92,8 +99,33 @@ CodeGradX.writeFileContent = function (filename, data) {
     return nodefn.call(fs.writeFile, filename, data);
 };
 
-/** 
-    `processAuthentication()` handle authentication, read/update credentials.
+/** Debug utility to visualize what the agent is doing.
+    It uses `console.log` for that visualization.
+
+    @param {object} arguments
+    @returns {nothing}
+*/
+
+CodeGradX.Agent.prototype.debug = function () {
+    var agent = this;
+    var t = _.now() - agent.startTime; 
+  // Separate seconds from milliseconds:
+  var msg = ('000'+t).replace(/(...)$/, ".$1") + ' ';
+  msg = msg.replace(/^0*/, '');
+  for (var i=0 ; i<arguments.length ; i++) {
+    if ( arguments[i] === null ) {
+      msg += 'null ';
+    } else if ( arguments[i] === undefined ) {
+      msg += 'undefined ';
+    } else {
+      msg += arguments[i].toString() + ' ';
+    }
+  }
+  console.log(msg);
+}
+
+/** Handle authentication, read and/or update credentials.
+    By default the credentials file is name `./fw4ex.json`.
 
     @param {Array<string>} strings - command line options
     @returns {Promise<User>} 
@@ -115,8 +147,9 @@ CodeGradX.Agent.prototype.processAuthentication = function (strings) {
     }
 
     function updateCredentials (user) {
+        agent.debug("Successful authentication of", user.email);
         if ( commands.options['update-credentials'] ) {
-            agent.state.debug("Updating credentials", agent.credentialsFile);
+            agent.debug("Updating credentials", agent.credentialsFile);
             return CodeGradX.writeFileContent(
                 agent.credentialsFile,
                 JSON.stringify({
@@ -128,7 +161,7 @@ CodeGradX.Agent.prototype.processAuthentication = function (strings) {
                 }) ).then(function () {
                     return when(user);
                 }, function (reason) {
-                    agent.state.debug("Could not write credentials");
+                    agent.debug("Could not write credentials");
                     return when.reject(reason);
                 });
         } else {
@@ -137,13 +170,14 @@ CodeGradX.Agent.prototype.processAuthentication = function (strings) {
     }
     
     function couldNotAuthenticate (reason) {
-        agent.state.debug("Failed authentication", reason);
+        agent.debug("Failed authentication", reason);
         return when.reject(reason);
     }
 
     // --user= and --password= are present:
     if ( commands.options.user &&
          commands.options.password ) {
+        agent.debug("Authenticating with user and password...");
         return agent.state.getAuthenticatedUser(
             commands.options.user,
             commands.options.password )
@@ -151,14 +185,15 @@ CodeGradX.Agent.prototype.processAuthentication = function (strings) {
 
     // --credentials= designates a configuration file:
     } else if ( commands.options.credentials ) {
+        agent.debug("Reading credentials", commands.options.credentials);
         return CodeGradX.readFileContent(commands.options.credentials).then(
             function (content) {
-                agent.state.debug("Read " + commands.options.credentials);
+                agent.debug("Read credentials" + commands.options.credentials);
                 agent.credentials = JSON.parse(content);
                 // A user and its password are present:
                 if ( agent.credentials.user &&
                      agent.credentials.password ) {
-                    agent.state.debug("Using user+password");
+                    agent.debug("Authentication using user and password");
                     return agent.state.getAuthenticatedUser(
                         agent.credentials.user,
                         agent.credentials.password )
@@ -166,7 +201,7 @@ CodeGradX.Agent.prototype.processAuthentication = function (strings) {
 
                 // But a cookie may be present:
                 } else if ( agent.credentials.cookie ) {
-                    agent.state.debug("Using cookie");
+                    agent.debug("Authentication using cookie");
                     agent.state.currentCookie = agent.credentials.cookie;
                     return agent.state.getAuthenticatedUser(
                         agent.credentials.user,
@@ -183,6 +218,145 @@ CodeGradX.Agent.prototype.processAuthentication = function (strings) {
             });
     }
     return when.reject(new Error("No way to authenticate!"));
+}
+
+/** Parse command line arguments and enrich the agent with them.
+    The agent will get a `commands` property. This method is only
+    used by processAuthentication.
+
+    @param {Array<string>} strings - command line arguments
+    @return {Agent}
+
+*/
+
+CodeGradX.Agent.prototype.getOptions = function (strings) {
+    var commands = {
+        options: {
+            "send": false
+        }
+    };
+    if ( strings ) {
+        commands = this.parser.parse(strings);
+    } else {
+        commands = this.parser.parseSystem();
+    }
+    //console.log(commands);
+    this.commands = commands;
+    return commands;
+}
+
+/** Determine the type of interaction with the infrastructure.
+    `type` may be `job`, `exercise` or `batch`.
+
+    @returns {Promise<???>} yield a promise according to type
+
+*/
+
+CodeGradX.Agent.prototype.processType = function () {
+    var agent = this;
+    var type = agent.commands.options.type || 'job';
+    if ( type === 'job' ) {
+        return agent.processJob();
+    } else if ( type === 'exercise' ) {
+        return agent.processExercise();
+    } else if ( type === 'batch' ) {
+        return agent.processBatch();
+    } else {
+        return when.reject(new Error("Unknown interaction type " + type));
+    }
+};
+
+/** Send a Job and wait for the marking report
+
+    @returns {Promise<Job>} 
+
+*/
+
+CodeGradX.Agent.prototype.processJob = function () {
+    var agent = this;
+    var exercise = new CodeGradX.Exercise({
+        safecookie: agent.commands.options.exercise
+    });
+    var parameters = {
+        progress: function (parameters) {
+            agent.debug("Waiting", parameters.i, "...");
+        }
+    };
+    if ( agent.commands.options.timeout ) {
+        parameters.step = agent.commands.options.timeout;
+    }
+    if ( agent.commands.options.retry ) {
+        parameters.step = agent.commands.options.retry;
+    }
+    function cannotSendAnswer (reason) {
+        agent.state.log.debug("Could not send file").show();
+        throw reason;
+    }
+    function cannotGetReport (reason) {
+        agent.debug("Could not get report");
+        throw reason;
+    }
+    function storeReports (job) {
+        agent.debug("Got job marking report", job.jobid);
+        function storeXMLReport (job) {
+            agent.debug("writing XML report");
+            return agent.writeReport(job.XMLreport, 'jobStudentReport', 'xml');
+        }
+        function storeHTMLReport (job) {
+            agent.debug("writing HTML report");
+            return agent.writeReport(job._report, 'jobStudentReport', 'html');
+        }
+        function returnJob () {
+            return job;
+        }
+        var promises = [
+            storeXMLReport(job).catch(cannotStoreReport),
+            storeHTMLReport(job).catch(cannotStoreReport)
+        ];
+        return when.all(promises).then(returnJob);
+    }
+    function cannotStoreReport (reason) {
+        agent.debug("Could not store report");
+        throw reason;
+    }
+    function getJobReport (job) {
+        agent.debug("Job sent, known as", job.jobid);
+        return agent.writeReport(job.responseXML, 'jobSubmittedReport', 'xml')
+            .then(function () {
+                agent.debug("Waiting for marking report");
+                return job.getReport(parameters)
+                    .catch(cannotGetReport)
+                    .then(storeReports)
+                    .catch(cannotStoreReport);
+            }).catch(cannotStoreReport);
+    }
+    agent.debug("Sending job...");
+    return exercise
+        .sendFileAnswer(agent.commands.options.stuff)
+        .catch(cannotSendAnswer)
+        .then(getJobReport);
+};
+
+/** Store a report. 
+    XML or HTML reports are numbered consecutively.
+    
+    @param {string|Buffer} content - content of the file to write
+    @param {string} label - type of document
+    @param {string} suffix - suffix of the file to write
+    @returns {Promise<>}
+
+*/
+
+CodeGradX.Agent.prototype.writeReport = function (content, label, suffix) {
+    var agent = this;
+    var label = ('-' + label) || '';
+    var file = agent.xmldir + '/' + 
+        (++agent.counter) + label + '.' + suffix;
+    return CodeGradX.writeFileContent(file, content)
+    .then(function () {
+        agent.debug("Now written", file);
+        return when(file);
+    });
 }
 
 // end of codegradxagent.js
