@@ -108,20 +108,23 @@ CodeGradX.writeFileContent = function (filename, data) {
 
 CodeGradX.Agent.prototype.debug = function () {
     var agent = this;
-    var t = _.now() - agent.startTime; 
-  // Separate seconds from milliseconds:
-  var msg = ('000'+t).replace(/(...)$/, ".$1") + ' ';
-  msg = msg.replace(/^0*/, '');
-  for (var i=0 ; i<arguments.length ; i++) {
-    if ( arguments[i] === null ) {
-      msg += 'null ';
-    } else if ( arguments[i] === undefined ) {
-      msg += 'undefined ';
-    } else {
-      msg += arguments[i].toString() + ' ';
+    if ( ! agent.verbose ) {
+        return;
     }
-  }
-  console.log(msg);
+    var t = _.now() - agent.startTime; 
+    // Separate seconds from milliseconds:
+    var msg = ('000'+t).replace(/(...)$/, ".$1") + ' ';
+    msg = msg.replace(/^0*/, '');
+    for (var i=0 ; i<arguments.length ; i++) {
+        if ( arguments[i] === null ) {
+            msg += 'null ';
+        } else if ( arguments[i] === undefined ) {
+            msg += 'undefined ';
+        } else {
+            msg += arguments[i].toString() + ' ';
+        }
+    }
+    console.log(msg);
 }
 
 /** Handle authentication, read and/or update credentials.
@@ -137,6 +140,7 @@ CodeGradX.Agent.prototype.processAuthentication = function (strings) {
     var commands = agent.getOptions(strings);
     agent.commands = commands;
 
+    // Process global options:
     if ( commands.options.verbose ) {
         agent.verbose = true;
     }
@@ -145,6 +149,11 @@ CodeGradX.Agent.prototype.processAuthentication = function (strings) {
         agent.usage();
         return when.reject(new Error("Help displayed"));
     }
+
+    if ( commands.options.xmldir ) {
+        agent.xmldir = commands.options.xmldir;
+    }
+    // counter....
 
     function updateCredentials (user) {
         agent.debug("Successful authentication of", user.email);
@@ -245,6 +254,28 @@ CodeGradX.Agent.prototype.getOptions = function (strings) {
     return commands;
 }
 
+/** Store a report. 
+    XML or HTML reports are numbered consecutively.
+    
+    @param {string|Buffer} content - content of the file to write
+    @param {string} label - type of document
+    @param {string} suffix - suffix of the file to write
+    @returns {Promise<>}
+
+*/
+
+CodeGradX.Agent.prototype.writeReport = function (content, label, suffix) {
+    var agent = this;
+    var label = ('-' + label) || '';
+    var file = agent.xmldir + '/' + 
+        (++agent.counter) + label + '.' + suffix;
+    return CodeGradX.writeFileContent(file, content)
+    .then(function () {
+        agent.debug("Now written", file);
+        return when(file);
+    });
+}
+
 /** Determine the type of interaction with the infrastructure.
     `type` may be `job`, `exercise` or `batch`.
 
@@ -307,13 +338,13 @@ CodeGradX.Agent.prototype.processJob = function () {
             return agent.writeReport(job._report, 'jobStudentReport', 'html');
         }
         function returnJob () {
-            return job;
+            return when(job);
         }
-        var promises = [
-            storeXMLReport(job).catch(cannotStoreReport),
-            storeHTMLReport(job).catch(cannotStoreReport)
-        ];
-        return when.all(promises).then(returnJob);
+        return storeXMLReport(job)
+                .catch(cannotStoreReport)
+                .then(storeHTMLReport)
+                .catch(cannotStoreReport)
+                .then(returnJob);
     }
     function cannotStoreReport (reason) {
         agent.debug("Could not store report");
@@ -337,27 +368,111 @@ CodeGradX.Agent.prototype.processJob = function () {
         .then(getJobReport);
 };
 
-/** Store a report. 
-    XML or HTML reports are numbered consecutively.
-    
-    @param {string|Buffer} content - content of the file to write
-    @param {string} label - type of document
-    @param {string} suffix - suffix of the file to write
-    @returns {Promise<>}
+/** Send a Batch and wait for the associated marking reports
+
+    @returns {Promise<Batch>} 
 
 */
 
-CodeGradX.Agent.prototype.writeReport = function (content, label, suffix) {
+CodeGradX.Agent.prototype.processBatch = function () {
     var agent = this;
-    var label = ('-' + label) || '';
-    var file = agent.xmldir + '/' + 
-        (++agent.counter) + label + '.' + suffix;
-    return CodeGradX.writeFileContent(file, content)
-    .then(function () {
-        agent.debug("Now written", file);
-        return when(file);
+    var exercise = new CodeGradX.Exercise({
+        safecookie: agent.commands.options.exercise
     });
-}
+    function showProgress (parameters) {
+        var batch = parameters.batch;
+        if ( batch ) {
+            agent.debug("Marked jobs:", batch.finishedjobs, 
+                        '/', (batch.totaljobs || '?'),
+                        '   still waiting...');
+            //agent.state.log.show();
+        } else {
+            agent.debug("Waiting...", parameters.i);
+        }
+    }
+    var parameters = {
+        progress: showProgress
+    };
+    if ( agent.commands.options.timeout ) {
+        parameters.step = agent.commands.options.timeout;
+    }
+    if ( agent.commands.options.retry ) {
+        parameters.step = agent.commands.options.retry;
+    }
+    function cannotSendBatch (reason) {
+        agent.state.log.debug("Could not send batch file").show();
+        throw reason;
+    }
+    function cannotStoreReport (reason) {
+        agent.debug("Could not store report");
+        throw reason;
+    }
+    function cannotGetReport (reason) {
+        agent.debug("Could not get batch final report");
+        throw reason;
+    }
+    function storeBatchReport (batch) {
+        agent.debug("Got batch final report", batch.batchid);
+        function storeJobReports (job) {
+            agent.debug("Got job marking report", job.jobid);
+            function storeXMLReport (job) {
+                agent.debug("writing XML report");
+                return agent.writeReport(job.XMLreport, 
+                                         'jobStudentReport', 
+                                         'xml');
+            }
+            function storeHTMLReport (job) {
+                agent.debug("writing HTML report");
+                return agent.writeReport(job._report, 
+                                         'jobStudentReport', 
+                                         'html');
+            }
+            function returnJob () {
+                return when(job);
+            }
+            return storeXMLReport(job)
+                .catch(cannotStoreReport)
+                .then(storeHTMLReport)
+                .catch(cannotStoreReport)
+                .then(returnJob);
+        }
+        function returnBatch () {
+            if ( agent.commands.options.follow ) {
+                agent.debug("Fetching individual jobs...");
+                var promise, promises = [];
+                _.forEach(batch.jobs, function (job) {
+                    promise = job.getReport().then(storeJobReports);
+                    promises.push(promise);
+                });
+                return when.all(promises);
+            } else {
+                return when(batch);
+            }
+        }
+        return agent.writeReport(batch.XMLreport, 
+                                 'multiJobStudentReport', 
+                                 'xml')
+        .then(returnBatch);
+    }
+    function getBatchReport (batch) {
+        agent.debug("Batch sent, known as", batch.batchid);
+        return agent.writeReport(batch.responseXML, 
+                                 'multiJobSubmittedReport', 
+                                 'xml')
+            .then(function () {
+                agent.debug("Waiting for final batch completion report...");
+                return batch.getFinalReport(parameters)
+                    .catch(cannotGetReport)
+                    .then(storeBatchReport)
+                    .catch(cannotStoreReport);
+            }).catch(cannotStoreReport);
+    }
+    agent.debug("Sending batch...");
+    return exercise
+        .sendBatch(agent.commands.options.stuff)
+        .catch(cannotSendBatch)
+        .then(getBatchReport);
+};
 
 // end of codegradxagent.js
 
