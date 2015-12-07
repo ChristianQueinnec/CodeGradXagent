@@ -22,7 +22,7 @@ describe("CodeGradXagent", function () {
         var agent = new CodeGradX.Agent();
         var faildone = make_faildone(done);
         spyOn(agent, "usage");
-        agent.processAuthentication([
+        agent.process([
             "-h"
         ]).then(faildone, function (reason) {
             expect(agent.usage).toHaveBeenCalled();
@@ -30,10 +30,34 @@ describe("CodeGradXagent", function () {
         });
     });
 
+    it("handles unknown option", function (done) {
+        var agent = new CodeGradX.Agent();
+        var faildone = make_faildone(done);
+        spyOn(agent, "usage");
+        agent.process([
+            "--unknowOption"
+        ]).then(faildone, function (reason) {
+            expect(agent.usage).toHaveBeenCalled();
+            done();
+        });
+    });
+    it("handles missing argument for option", function (done) {
+        var agent = new CodeGradX.Agent();
+        var faildone = make_faildone(done);
+        spyOn(agent, "usage");
+        agent.process([
+            "--counter"
+        ]).then(faildone, function (reason) {
+            expect(agent.usage).toHaveBeenCalled();
+            done();
+        });
+    });
+
+
     it("cannot read absent credentials", function (done) {
         var agent = new CodeGradX.Agent();
         var faildone = make_faildone(done);
-        agent.processAuthentication([
+        agent.process([
             "--credentials", "spec/absentCredentials.json"
         ]).then(faildone, function (reason) {
             expect(agent.credentials).not.toBeDefined();

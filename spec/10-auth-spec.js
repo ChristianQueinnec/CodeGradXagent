@@ -10,6 +10,7 @@ describe("CodeGradXagent authentication", function () {
     function initializer (agent) {
         // User VMauthor's servers:
         agent.state = new CodeGradX.State(vmauthor.initialize);
+        return agent;
     }
 
     it("should be loaded", function () {
@@ -30,7 +31,7 @@ describe("CodeGradXagent authentication", function () {
     it("cannot read absent credentials", function (done) {
         agent = new CodeGradX.Agent(initializer);
         var faildone = make_faildone(done);
-        agent.processAuthentication([
+        agent.process([
             "--credentials", "spec/absentCredentials.json"
         ]).then(faildone, function (reason) {
             expect(agent.credentials).not.toBeDefined();
@@ -38,12 +39,26 @@ describe("CodeGradXagent authentication", function () {
         });
     });
 
+    var safecookie1;
+
     it("with user+password", function (done) {
         agent = new CodeGradX.Agent(initializer);
         var faildone = make_faildone(done);
-        agent.processAuthentication([
+        agent.process([
             "--user",     vmauthData.login,
             "--password", vmauthData.password
+        ]).then(function (user) {
+            expect(user).toBeDefined();
+            expect(user.email).toBe('nobody@example.com');
+            safecookie1 = agent.state.currentCookie;
+            done();
+        }, faildone);
+    }, 10*1000); // 10 seconds
+
+    it("with previous cookie", function (done) {
+        agent = CodeGradX.getCurrentAgent();
+        var faildone = make_faildone(done);
+        agent.process([
         ]).then(function (user) {
             expect(user).toBeDefined();
             expect(user.email).toBe('nobody@example.com');
@@ -54,7 +69,7 @@ describe("CodeGradXagent authentication", function () {
     it("update credentials with user+password", function (done) {
         agent = new CodeGradX.Agent(initializer);
         var faildone = make_faildone(done);
-        agent.processAuthentication([
+        agent.process([
             "--user",     vmauthData.login,
             "--password", vmauthData.password,
             "--update-credentials"
@@ -74,7 +89,7 @@ describe("CodeGradXagent authentication", function () {
         agent = new CodeGradX.Agent(initializer);
         var faildone = make_faildone(done);
         agent.state.log.size = 100;
-        agent.processAuthentication([
+        agent.process([
             "--user",     vmauthData.login,
             "--password", '123456WrongPassword'
         ]).then(faildone, function (reason) {
@@ -87,7 +102,7 @@ describe("CodeGradXagent authentication", function () {
     it("with credentials with cookie", function (done) {
         agent = new CodeGradX.Agent(initializer);
         var faildone = make_faildone(done);
-        agent.processAuthentication([
+        agent.process([
             "--credentials", agent.credentialsFile
         ]).then(function (user) {
             expect(user).toBeDefined();
@@ -102,7 +117,7 @@ describe("CodeGradXagent authentication", function () {
             agent.credentialsFile, 
             '{"cookie": ["u=U1234"]}').then(
                 function () {
-                    agent.processAuthentication([
+                    agent.process([
                         "--credentials", agent.credentialsFile
                     ]).then(function (user) {
                         console.log(user);
@@ -123,7 +138,7 @@ describe("CodeGradXagent authentication", function () {
                 user:     vmauthData.login,
                 password: vmauthData.password
             })).then(function () {
-                agent.processAuthentication([
+                agent.process([
                     "--credentials", agent.credentialsFile
                 ]).then(function (user) {
                     expect(user).toBeDefined();
@@ -140,7 +155,7 @@ describe("CodeGradXagent authentication", function () {
             agent.credentialsFile, 
             '{"user": "nobody:0", "password": "totallyWrong"}').then(
                 function () {
-                    agent.processAuthentication([
+                    agent.process([
                         "--credentials", agent.credentialsFile
                     ]).then(function (user) {
                         console.log(user);
