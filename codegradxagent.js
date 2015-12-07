@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 /**
 
  Command line utilities to interact with the CodeGradX infrastructure
@@ -85,7 +86,8 @@ CodeGradX.getCurrentAgent = function () {
 */
 
 CodeGradX.Agent.prototype.usage = function () {
-    console.log("to be done from a file");
+    var agent = this;
+    agent.parser.showHelp();
 };
 
 /** Promisify writing to a file.
@@ -300,12 +302,8 @@ CodeGradX.Agent.prototype.getOptions = function (strings) {
             commands = this.parser.parseSystem();
         }
     } catch (exc) {
-        console.log(exc);
-        commands = {
-            options: {
-                help: true
-            }
-        };
+        agent.debug("getOptions failure", exc);
+        throw("getOptions failure: " + exc);
     }
     //console.log(commands);
     this.commands = commands;
@@ -620,6 +618,15 @@ CodeGradX.Agent.prototype.processExercise = function () {
         .catch(cannotSendExercise)
         .then(getExerciseReport);
 };
+
+if ( _.endsWith(process.argv[1], 'codegradxagent.js') ) {
+    // We are running that script:
+    var agent = new CodeGradX.Agent();
+    agent.process(process.argv.slice(2))
+    .catch(function (exc) {
+        console.log('Failure: ' + exc);
+    });
+}
 
 // end of codegradxagent.js
 
