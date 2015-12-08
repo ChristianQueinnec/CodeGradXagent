@@ -396,13 +396,20 @@ CodeGradX.Agent.prototype.guessExercise = function (string) {
     }
     results = string.match(/^campaign:(.+)#(\d+)$/);
     if ( results ) {
-        index = results[2];
+        var campaignName = results[1];
+        index = results[2] / 1;
         var user = agent.state.currentUser;
-        return user.getCampaign(results[1])
+        return user.getCampaign(campaignName)
         .then(function (campaign) {
-            return campaign.getExercisesSet()
-            .then(function (es) {
-                return es.getExercise(index);
+            return campaign.getExercise(index)
+            .then(function (exercise) {
+                if ( exercise ) {
+                    return when(exercise);
+                } else {
+                    var error = new Error("Cannot find exercise#" + index +
+                       " of the " + campaign.name + " campaign");
+                    return when.reject(error);
+                }
             });
         });
     }

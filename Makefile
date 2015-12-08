@@ -1,4 +1,4 @@
-work : nothing 
+work : lint tests
 clean :: cleanMakefile
 
 # ############## Working rules:
