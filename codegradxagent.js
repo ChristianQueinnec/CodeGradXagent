@@ -44,9 +44,10 @@ CodeGradX.Agent = function (initializer) {
         ['c',  'counter=[NUMBER]',      "start value when counting reports"],
         ['t',  'type=[TYPE]',           "type of submission"],
         ['e',  'exercise=[SAFECOOKIE]', "identifier of an exercise"],
-        ['r',  'retry=[NUMBER]',        "number of attempts"],
-        ['o',  'offset=[NUMBER]',       "wait time before attempting"],
-        ['s',  'timeout=[NUMBER]',      "wait time between attempts"],
+        ['r',  'resume=[FILE]',         "resume job, exercise or batch"],
+        ['',   'retry=[NUMBER]',        "number of attempts"],
+        ['',   'offset=[NUMBER]',       "wait time before attempting"],
+        ['',   'timeout=[NUMBER]',      "wait time between attempts"],
         ['',   'send',                  "really request servers"]
     ];
     this.parser = getopt.create(this.configuration);
@@ -66,7 +67,7 @@ CodeGradX.Agent = function (initializer) {
     }
     CodeGradX.getCurrentAgent = function () {
         return agent;
-    }
+    };
 };
 
 /** Get the current agent (if defined)
@@ -143,8 +144,14 @@ CodeGradX.Agent.prototype.debug = function () {
 
 CodeGradX.Agent.prototype.process = function (strings) {
     var agent = this;
-    var commands = agent.getOptions(strings);
-    agent.commands = commands;
+    var commands;
+    try {
+        commands = agent.getOptions(strings);
+        agent.commands = commands;
+    } catch (exc) {
+        agent.usage();
+        return when.reject(exc);
+    }
 
     // Process global options:
     if ( commands.options.verbose ) {
@@ -290,6 +297,7 @@ CodeGradX.Agent.prototype.processAuthentication = function () {
 */
 
 CodeGradX.Agent.prototype.getOptions = function (strings) {
+    var agent = this;
     var commands = {
         options: {
             "send": false
@@ -322,7 +330,7 @@ CodeGradX.Agent.prototype.getOptions = function (strings) {
 
 CodeGradX.Agent.prototype.writeReport = function (content, label, suffix) {
     var agent = this;
-    var label = ('-' + label) || '';
+    label = ('-' + label) || '';
     var file = agent.xmldir + '/' + 
         (++agent.counter) + label + '.' + suffix;
     return CodeGradX.writeFileContent(file, content)
@@ -360,32 +368,48 @@ CodeGradX.Agent.prototype.processType = function (user) {
     (a long chain of characters starting with `U`) or by a kind of URI
     telling where to find that safecookie. Syntaxes for that URI are:
       
-    file:exerciseAuthorReport.xml
-    file:path.xml#N    
+    file:exerciseAuthorReport.xml   means the exercise mentioned.
+    
+    campaign:free#N      means the Nth exercise of campaign `free`
 
     @param {string} string - a safecookie or a kind of URI
-    @returns {Exercise}
+    @returns {Promise<Exercise>}
 */
 
 CodeGradX.Agent.prototype.guessExercise = function (string) {
-    var results = string.match(/^file:(.*)(#(\d+))?$/);
+    var agent = this;
+    var results = string.match(/^file:(.*)$/);
+    var exercise, index;
     if ( results ) {
         var file = results[1];
-        var index = results[3] || 0;
+        index = results[3] || 0;
         var content = fs.readFileSync(file, 'utf8');
         results = content.match(/<exerciseAuthorReport .* safecookie="([^"]+)"/);
         if ( results ) {
-            return new CodeGradX.Exercise({
+            exercise = new CodeGradX.Exercise({
                 safecookie: results[1]
             });
+            return when(exercise);
         } else {
-            return when.reject("Could not guess exercise " + string);
+            return when.reject("Could not find safecookie within " + string);
         }
-    } else {
-        return new CodeGradX.Exercise({
-            safecookie: string
+    }
+    results = string.match(/^campaign:(.+)#(\d+)$/);
+    if ( results ) {
+        index = results[2];
+        var user = agent.state.currentUser;
+        return user.getCampaign(results[1])
+        .then(function (campaign) {
+            return campaign.getExercisesSet()
+            .then(function (es) {
+                return es.getExercise(index);
+            });
         });
     }
+    exercise = new CodeGradX.Exercise({
+        safecookie: string
+    });
+    return when(exercise);
 };
 
 /** Send a Job and wait for the marking report
@@ -396,39 +420,43 @@ CodeGradX.Agent.prototype.guessExercise = function (string) {
 
 CodeGradX.Agent.prototype.processJob = function () {
     var agent = this;
-    var exercise = agent.guessExercise(agent.commands.options.exercise);
-    //console.log(exercise);
-    var parameters = {
-        progress: function (parameters) {
-            agent.debug("Waiting", parameters.i, "...");
-        }
-    };
-    if ( agent.commands.options.timeout ) {
-        parameters.step = agent.commands.options.timeout;
-    }
-    if ( agent.commands.options.retry ) {
-        parameters.retry = agent.commands.options.retry;
-    }
-    function cannotSendAnswer (reason) {
-        agent.state.log.debug("Could not send file").show();
-        throw reason;
-    }
-    function getJobReport (job) {
-        agent.debug("Job sent, known as", job.jobid);
-        return agent.writeReport(job.responseXML, 'jobSubmittedReport', 'xml')
-            .then(function () {
-                agent.debug("Waiting for marking report");
-                return job.getReport(parameters)
-                    .catch(_.bind(agent.cannotGetReport, agent))
-                    .then(_.bind(agent.storeJobReports, agent))
-                    .catch(_.bind(agent.cannotStoreReport, agent));
-            }).catch(_.bind(agent.cannotStoreReport, agent));
-    }
-    agent.debug("Sending job...");
-    return exercise
-        .sendFileAnswer(agent.commands.options.stuff)
-        .catch(cannotSendAnswer)
-        .then(getJobReport);
+    return agent.guessExercise(agent.commands.options.exercise)
+        .then(function (exercise) {
+            //console.log(exercise);
+            var parameters = {
+                progress: function (parameters) {
+                    agent.debug("Waiting", parameters.i, "...");
+                }
+            };
+            if ( agent.commands.options.timeout ) {
+                parameters.step = agent.commands.options.timeout;
+            }
+            if ( agent.commands.options.retry ) {
+                parameters.retry = agent.commands.options.retry;
+            }
+            function cannotSendAnswer (reason) {
+                agent.state.log.debug("Could not send file").show();
+                throw reason;
+            }
+            function getJobReport (job) {
+                agent.debug("Job sent, known as", job.jobid);
+                return agent.writeReport(job.responseXML, 
+                                         'jobSubmittedReport', 
+                                         'xml')
+                    .then(function () {
+                        agent.debug("Waiting for marking report");
+                        return job.getReport(parameters)
+                            .catch(_.bind(agent.cannotGetReport, agent))
+                                .then(_.bind(agent.storeJobReports, agent))
+                            .catch(_.bind(agent.cannotStoreReport, agent));
+                    }).catch(_.bind(agent.cannotStoreReport, agent));
+            }
+            agent.debug("Sending job...");
+            return exercise
+                .sendFileAnswer(agent.commands.options.stuff)
+                .catch(cannotSendAnswer)
+                    .then(getJobReport);
+        });
 };
 
 /** storeJobReports store the XML and HTML content of a job in the
@@ -564,7 +592,7 @@ CodeGradX.Agent.prototype.processBatch = function () {
 
 CodeGradX.Agent.prototype.processExercise = function () {
     var agent = this;
-    var parameters = {}
+    var parameters = {};
     if ( agent.commands.options.timeout ) {
         parameters.step = agent.commands.options.timeout;
     }

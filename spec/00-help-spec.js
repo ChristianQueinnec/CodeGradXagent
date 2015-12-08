@@ -35,12 +35,13 @@ describe("CodeGradXagent", function () {
         var faildone = make_faildone(done);
         spyOn(agent, "usage");
         agent.process([
-            "--unknowOption"
+            "--unknownOption"
         ]).then(faildone, function (reason) {
             expect(agent.usage).toHaveBeenCalled();
             done();
         });
     });
+
     it("handles missing argument for option", function (done) {
         var agent = new CodeGradX.Agent();
         var faildone = make_faildone(done);
@@ -52,7 +53,6 @@ describe("CodeGradXagent", function () {
             done();
         });
     });
-
 
     it("cannot read absent credentials", function (done) {
         var agent = new CodeGradX.Agent();
