@@ -2,6 +2,7 @@
 codegradxlib.js
 node_modules/
 .fw4ex.json
+CodeGradXagent.tgz
 spec/vmauth-data.json
 spec/vmauthor-data.js
 [0-9]*ml

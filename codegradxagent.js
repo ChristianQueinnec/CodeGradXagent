@@ -47,8 +47,7 @@ CodeGradX.Agent = function (initializer) {
         ['r',  'resume=[FILE]',         "resume job, exercise or batch"],
         ['',   'retry=[NUMBER]',        "number of attempts"],
         ['',   'offset=[NUMBER]',       "wait time before attempting"],
-        ['',   'timeout=[NUMBER]',      "wait time between attempts"],
-        ['',   'send',                  "really request servers"]
+        ['',   'timeout=[NUMBER]',      "wait time between attempts"]
     ];
     this.parser = getopt.create(this.configuration);
     this.parser.errorFunc = function (e) {
@@ -524,11 +523,34 @@ CodeGradX.Agent.prototype.processBatch = function () {
     });
     function showProgress (parameters) {
         var batch = parameters.batch;
+        function fetchJobs () {
+            if ( agent.commands.options.follow &&
+                 batch.finishedjobs > 0 ) {
+                agent.debug("Fetching in advance individual jobs...");
+                var promise, promises = [];
+                _.forEach(batch.jobs, function (job) {
+                    if ( ! job._stored ) {
+                        promise = job.getReport()
+                        .then(_.bind(agent.storeJobReports, agent))
+                        .then(function (job) {
+                            agent.debug("Stored report for job " + job.jobid);
+                            job._stored = true;
+                            return done(job);
+                        });
+                        promises.push(promise);
+                    }
+                });
+                function ignore () { return; }
+                when.all(promises).then(ignore).catch(ignore);
+            }
+        }
         if ( batch ) {
             agent.debug("Marked jobs:", batch.finishedjobs, 
                         '/', (batch.totaljobs || '?'),
                         '   still waiting...');
             //agent.state.log.show();
+            // Fetch job reports for already marked jobs:
+            fetchJobs();
         } else {
             agent.debug("Waiting...", parameters.i);
         }
@@ -556,9 +578,11 @@ CodeGradX.Agent.prototype.processBatch = function () {
                 agent.debug("Fetching individual jobs...");
                 var promise, promises = [];
                 _.forEach(batch.jobs, function (job) {
-                    promise = job.getReport()
-                        .then(_.bind(agent.storeJobReports, agent));
-                    promises.push(promise);
+                    if ( ! job._stored ) {
+                        promise = job.getReport()
+                            .then(_.bind(agent.storeJobReports, agent));
+                        promises.push(promise);
+                    }
                 });
                 return when.all(promises);
             } else {

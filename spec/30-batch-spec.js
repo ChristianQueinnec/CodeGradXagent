@@ -65,6 +65,7 @@ describe("CodeGradXagent process Batch", function () {
             "--exercise", exercise1.safecookie,
             "--offset",   30,
             "--timeout",  10,
+            "--counter",  400,
             "--follow"
         ]).then(function (batch) {
             expect(batch).toBeDefined();
@@ -85,8 +86,9 @@ describe("CodeGradXagent process Batch", function () {
             "--type",     'batch',
             "--stuff",    'spec/oefgc.tgz',
             "--exercise", exercise1.safecookie,
-            "--timeout",  10,
-            "--retry",    3,
+            "--timeout",  5,
+            "--retry",    2,
+            "--counter",  450,
             "--follow"
         ]).then(function (batch) {
             agent.process([
