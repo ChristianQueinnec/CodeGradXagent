@@ -1,5 +1,6 @@
 work : lint tests
-clean :: cleanMakefile
+clean :
+	-rm -f .fw4ex.json [0-9]*ml
 
 # ############## Working rules:
 

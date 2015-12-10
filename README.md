@@ -166,14 +166,15 @@ Some files are produced:
   label `premiere`
 - etc.
 
-#### Resumption (not yet implemented)
+#### Resumption
 
 The management of time does not vary but, of course, should accomodate
 the number of students' answers to be graded. If it appears that you
-mention a too short duration, you may resume your script with:
+mention a too short duration and miss some students' grading report,
+you may resume your script with:
 
 ```bash
-$ ./codegradxagent.js --resume 101-multiJobSubmittedReport.xml
+$ ./codegradxagent.js --resume 101-multiJobSubmittedReport.xml --follow
 ```
 
 ### Submitting an exercise
@@ -201,14 +202,20 @@ Some files are produced:
 - `2-exerciseAuthorReport.xml` is the final report where appears the
   safe-cookie of the exercise if no problem was detected.
 
-#### Resumption (not yet implemented)
+#### Resumption
 
 The management of time does not vary but, of course, should accomodate
 the number of students' answers to be graded. If it appears that you
-mention a too short duration, you may resume your script with:
+mention a too short duration, you may resume your script and ask
+for the grading reports of the pseudo-jobs with:
 
 ```bash
-$ ./codegradxagent.js --resume 1-exerciseSubmittedReport.xml
+$ ./codegradxagent.js --resume 1-exerciseSubmittedReport.xml --follow
 ```
 
+You may also set new options for time management.
 
+## Miscellaneous
+
+The `Samples` directory contains examples of XML files obtained
+from the CodeGradX infrastructure.

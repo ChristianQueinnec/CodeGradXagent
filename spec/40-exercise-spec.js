@@ -1,4 +1,7 @@
-// test exercise wrt vmauthor
+// Jasmine test related to the vmauthor virtual machine. The vmauthor
+// virtual machine hosts a full constellation of CodeGradX servers.
+// The vmauthor virtual machine is available from 
+//       http://paracamplus.com/CodeGradX/VM/latest/
 
 var CodeGradX = require('../codegradxlib.js');
 var Agent = require('../codegradxagent.js');
@@ -31,7 +34,7 @@ describe("CodeGradXagent process Job", function () {
     var exerciseTGZFile1 = "spec/org.example.fw4ex.grading.check.tgz";
     var exercise1;
 
-    it("should send an exercise", function (done) {
+    it("should submit an exercise", function (done) {
         var agent = CodeGradX.getCurrentAgent();
         expect(agent).toBeDefined();
         var faildone = make_faildone(done);

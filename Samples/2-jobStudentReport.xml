@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fw4ex version="1.0"><jobStudentReport jobid="0B87F6EE-9E84-11E5-A36B-925F58336535"><marking archived="2015-12-09T14:49:27" started="2015-12-09T14:49:45Z" ended="2015-12-09T14:49:45Z" finished="2015-12-09T14:49:51" mark="1" totalMark="1"><machine nickname="Debian 4.0r3 32bit" version="1"/><exercise exerciseid="11111111-1111-1111-2221-000001000001"/><partialMark name="one" mark="1"/></marking><report>
+<FW4EX phase="begin" what="grading" when="2015-12-09T14:49:45Z"/>
+
+<FW4EX what="initializing"/>
+
+
+<FW4EX phase="begin" what="question one" when="2015-12-09T14:49:45Z"/>
+<section name="one"><title>one</title>
+<FW4EX what="Checking expectations for question one"/>
+<!-- checked presence of min.c -->
+<FW4EX what="Grading question one"/>
+<FW4EX phase="begin" what="running script tests/compile.sh" when="2015-12-09T14:49:45Z"/>
+<p> Voici le contenu de votre fichier min.c:
+<pre>
+int
+min (int x, int y)
+{
+   return (x&lt;y)?x:y;
+}
+
+</pre></p>
+<p> Je compile votre fichier avec la commande 
+<code>gcc -std=c99 -pedantic -Wall -Werror -c min.c</code>. 
+La compilation a réussi. </p>
+<FW4EX what="exit code 0"/>
+<FW4EX phase="end" what="running script tests/compile.sh" when="2015-12-09T14:49:45Z"/>
+<FW4EX phase="begin" what="running script tests/check.sh" when="2015-12-09T14:49:45Z"/>
+<p>
+Je vais incorporer votre fonction dans 5 fichiers
+la mettant en oeuvre. Je testerai ainsi comment se comporte votre
+fonction sur quelques données.
+</p>
+<section rank="1">
+<p> Voici le contenu du fichier 1 mettant en oeuvre votre fonction:
+<pre>
+/* $Id$ */
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+int min(int, int);
+
+#define A    3
+#define B    5
+#define MIN  3
+
+int
+main ()
+{
+     if ( MIN == min(A, B) ) {
+          return EXIT_SUCCESS;
+     } else {
+          return EXIT_FAILURE;
+     }
+}
+
+/* end of main1.c */
+</pre></p>
+
+<p> Je compile ce fichier </p>
+<p>La compilation a réussi.</p>
+<p> Je demande à exécuter le programme obtenu.
+Impeccable! Vous gagnez 
+<FW4EX what=" formula: 1/5 "/>
+<mark key="0B87F6EE-9E84-11E5-A36B-925F58336535" value="0.2">0.2</mark>
+ points</p>
+</section>
+<section rank="2">
+<p> Voici le contenu du fichier 2 mettant en oeuvre votre fonction:
+<pre>
+/* $Id$ */
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+int min(int, int);
+
+#define A    5
+#define B    3
+#define MIN  3
+
+int
+main ()
+{
+     if ( MIN == min(A, B) ) {
+          return EXIT_SUCCESS;
+     } else {
+          return EXIT_FAILURE;
+     }
+}
+
+/* end of main2.c */
+</pre></p>
+
+<p> Je compile ce fichier </p>
+<p>La compilation a réussi.</p>
+<p> Je demande à exécuter le programme obtenu.
+Impeccable! Vous gagnez 
+<FW4EX what=" formula: 1/5 "/>
+<mark key="0B87F6EE-9E84-11E5-A36B-925F58336535" value="0.2">0.2</mark>
+ points</p>
+</section>
+<section rank="3">
+<p> Voici le contenu du fichier 3 mettant en oeuvre votre fonction:
+<pre>
+/* $Id$ */
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+int min(int, int);
+
+#define A    3
+#define B    3
+#define MIN  3
+
+int
+main ()
+{
+     if ( MIN == min(A, B) ) {
+          return EXIT_SUCCESS;
+     } else {
+          return EXIT_FAILURE;
+     }
+}
+
+/* end of main3.c */
+</pre></p>
+
+<p> Je compile ce fichier </p>
+<p>La compilation a réussi.</p>
+<p> Je demande à exécuter le programme obtenu.
+Impeccable! Vous gagnez 
+<FW4EX what=" formula: 1/5 "/>
+<mark key="0B87F6EE-9E84-11E5-A36B-925F58336535" value="0.2">0.2</mark>
+ points</p>
+</section>
+<section rank="4">
+<p> Voici le contenu du fichier 4 mettant en oeuvre votre fonction:
+<pre>
+/* $Id$ */
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+int min(int, int);
+
+#define A    -33
+#define B    -55
+#define MIN  -55
+
+int
+main ()
+{
+     if ( MIN == min(A, B) ) {
+          return EXIT_SUCCESS;
+     } else {
+          return EXIT_FAILURE;
+     }
+}
+
+/* end of main4.c */
+</pre></p>
+
+<p> Je compile ce fichier </p>
+<p>La compilation a réussi.</p>
+<p> Je demande à exécuter le programme obtenu.
+Impeccable! Vous gagnez 
+<FW4EX what=" formula: 1/5 "/>
+<mark key="0B87F6EE-9E84-11E5-A36B-925F58336535" value="0.2">0.2</mark>
+ points</p>
+</section>
+<section rank="5">
+<p> Voici le contenu du fichier 5 mettant en oeuvre votre fonction:
+<pre>
+/* $Id$ */
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+int min(int, int);
+
+#define A    -33
+#define B    +55
+#define MIN  -33
+
+int
+main ()
+{
+     if ( MIN == min(A, B) ) {
+          return EXIT_SUCCESS;
+     } else {
+          return EXIT_FAILURE;
+     }
+}
+
+/* end of main5.c */
+</pre></p>
+
+<p> Je compile ce fichier </p>
+<p>La compilation a réussi.</p>
+<p> Je demande à exécuter le programme obtenu.
+Impeccable! Vous gagnez 
+<FW4EX what=" formula: 1/5 "/>
+<mark key="0B87F6EE-9E84-11E5-A36B-925F58336535" value="0.2">0.2</mark>
+ points</p>
+</section>
+<p>
+Fin de correction automatique.
+</p>
+<FW4EX what="exit code 0"/>
+<FW4EX phase="end" what="running script tests/check.sh" when="2015-12-09T14:49:45Z"/>
+</section>
+<FW4EX what="exit code 0"/>
+<FW4EX what="PartialTotal one (1)"/><FW4EX phase="end" what="question one" when="2015-12-09T14:49:45Z"/>
+<FW4EX phase="end" what="grading" when="2015-12-09T14:49:45Z"/>
+</report></jobStudentReport></fw4ex>

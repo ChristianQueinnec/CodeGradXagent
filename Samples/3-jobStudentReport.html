@@ -1,0 +1,213 @@
+
+<div class="fw4ex_fw4ex" version="1.0"><div class="fw4ex_jobStudentReport" jobid="0B87F6EE-9E84-11E5-A36B-925F58336535"><div class="fw4ex_marking" archived="2015-12-09T14:49:27" started="2015-12-09T14:49:45Z" ended="2015-12-09T14:49:45Z" finished="2015-12-09T14:49:51" mark="1" totalMark="1"><div class="fw4ex_machine" nickname="Debian 4.0r3 32bit" version="1"></div><div class="fw4ex_exercise" exerciseid="11111111-1111-1111-2221-000001000001"></div><div class="fw4ex_partialMark" name="one" mark="1"></div></div><div class="fw4ex_report">
+
+
+
+
+
+
+<div name="one" class="fw4ex_section1"><div class="fw4ex_title">one</div>
+
+<!--  checked presence of min.c  -->
+
+
+<p> Voici le contenu de votre fichier min.c:
+<pre>
+int
+min (int x, int y)
+{
+   return (x<y)?x:y;
+}
+
+</pre></p>
+<p> Je compile votre fichier avec la commande 
+<code>gcc -std=c99 -pedantic -Wall -Werror -c min.c</code>. 
+La compilation a réussi. </p>
+
+
+
+<p>
+Je vais incorporer votre fonction dans 5 fichiers
+la mettant en oeuvre. Je testerai ainsi comment se comporte votre
+fonction sur quelques données.
+</p>
+<div rank="1" class="fw4ex_section2">
+<p> Voici le contenu du fichier 1 mettant en oeuvre votre fonction:
+<pre>
+/* $Id$ */
+
+#include <stdio.h>
+#include <stdlib.h>
+int min(int, int);
+
+#define A    3
+#define B    5
+#define MIN  3
+
+int
+main ()
+{
+     if ( MIN == min(A, B) ) {
+          return EXIT_SUCCESS;
+     } else {
+          return EXIT_FAILURE;
+     }
+}
+
+/* end of main1.c */
+</pre></p>
+
+<p> Je compile ce fichier </p>
+<p>La compilation a réussi.</p>
+<p> Je demande à exécuter le programme obtenu.
+Impeccable! Vous gagnez 
+
+<span key="0B87F6EE-9E84-11E5-A36B-925F58336535" value="0.2" class="fw4ex_mark">200.2</span>
+ points</p>
+</div>
+<div rank="2" class="fw4ex_section2">
+<p> Voici le contenu du fichier 2 mettant en oeuvre votre fonction:
+<pre>
+/* $Id$ */
+
+#include <stdio.h>
+#include <stdlib.h>
+int min(int, int);
+
+#define A    5
+#define B    3
+#define MIN  3
+
+int
+main ()
+{
+     if ( MIN == min(A, B) ) {
+          return EXIT_SUCCESS;
+     } else {
+          return EXIT_FAILURE;
+     }
+}
+
+/* end of main2.c */
+</pre></p>
+
+<p> Je compile ce fichier </p>
+<p>La compilation a réussi.</p>
+<p> Je demande à exécuter le programme obtenu.
+Impeccable! Vous gagnez 
+
+<span key="0B87F6EE-9E84-11E5-A36B-925F58336535" value="0.2" class="fw4ex_mark">200.2</span>
+ points</p>
+</div>
+<div rank="3" class="fw4ex_section2">
+<p> Voici le contenu du fichier 3 mettant en oeuvre votre fonction:
+<pre>
+/* $Id$ */
+
+#include <stdio.h>
+#include <stdlib.h>
+int min(int, int);
+
+#define A    3
+#define B    3
+#define MIN  3
+
+int
+main ()
+{
+     if ( MIN == min(A, B) ) {
+          return EXIT_SUCCESS;
+     } else {
+          return EXIT_FAILURE;
+     }
+}
+
+/* end of main3.c */
+</pre></p>
+
+<p> Je compile ce fichier </p>
+<p>La compilation a réussi.</p>
+<p> Je demande à exécuter le programme obtenu.
+Impeccable! Vous gagnez 
+
+<span key="0B87F6EE-9E84-11E5-A36B-925F58336535" value="0.2" class="fw4ex_mark">200.2</span>
+ points</p>
+</div>
+<div rank="4" class="fw4ex_section2">
+<p> Voici le contenu du fichier 4 mettant en oeuvre votre fonction:
+<pre>
+/* $Id$ */
+
+#include <stdio.h>
+#include <stdlib.h>
+int min(int, int);
+
+#define A    -33
+#define B    -55
+#define MIN  -55
+
+int
+main ()
+{
+     if ( MIN == min(A, B) ) {
+          return EXIT_SUCCESS;
+     } else {
+          return EXIT_FAILURE;
+     }
+}
+
+/* end of main4.c */
+</pre></p>
+
+<p> Je compile ce fichier </p>
+<p>La compilation a réussi.</p>
+<p> Je demande à exécuter le programme obtenu.
+Impeccable! Vous gagnez 
+
+<span key="0B87F6EE-9E84-11E5-A36B-925F58336535" value="0.2" class="fw4ex_mark">200.2</span>
+ points</p>
+</div>
+<div rank="5" class="fw4ex_section2">
+<p> Voici le contenu du fichier 5 mettant en oeuvre votre fonction:
+<pre>
+/* $Id$ */
+
+#include <stdio.h>
+#include <stdlib.h>
+int min(int, int);
+
+#define A    -33
+#define B    +55
+#define MIN  -33
+
+int
+main ()
+{
+     if ( MIN == min(A, B) ) {
+          return EXIT_SUCCESS;
+     } else {
+          return EXIT_FAILURE;
+     }
+}
+
+/* end of main5.c */
+</pre></p>
+
+<p> Je compile ce fichier </p>
+<p>La compilation a réussi.</p>
+<p> Je demande à exécuter le programme obtenu.
+Impeccable! Vous gagnez 
+
+<span key="0B87F6EE-9E84-11E5-A36B-925F58336535" value="0.2" class="fw4ex_mark">200.2</span>
+ points</p>
+</div>
+<p>
+Fin de correction automatique.
+</p>
+
+
+</div>
+
+
+
+</div></div></div>

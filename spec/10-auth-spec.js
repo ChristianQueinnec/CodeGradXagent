@@ -1,4 +1,7 @@
-// test authentication wrt vmauthor
+// Jasmine test related to the vmauthor virtual machine. The vmauthor
+// virtual machine hosts a full constellation of CodeGradX servers.
+// The vmauthor virtual machine is available from 
+//       http://paracamplus.com/CodeGradX/VM/latest/
 
 var CodeGradX = require('../codegradxlib.js');
 var Agent = require('../codegradxagent.js');

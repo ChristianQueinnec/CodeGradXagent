@@ -1,4 +1,7 @@
-// test batch wrt vmauthor
+// Jasmine test related to the vmauthor virtual machine. The vmauthor
+// virtual machine hosts a full constellation of CodeGradX servers.
+// The vmauthor virtual machine is available from 
+//       http://paracamplus.com/CodeGradX/VM/latest/
 
 var CodeGradX = require('../codegradxlib.js');
 var Agent = require('../codegradxagent.js');
@@ -73,34 +76,6 @@ describe("CodeGradXagent process Batch", function () {
             console.log(batch); // DEBUG
             expect(batch.jobs.third).toBeDefined();
             done();
-        }, faildone);
-    }, 500*1000); // 500 seconds
-
-    xit("send another batch and resume it", function (done) {
-        agent = new CodeGradX.Agent(initializer);
-        var faildone = make_faildone(done);
-        agent.process([
-            "-V",
-            "--user",     vmauthData.login,
-            "--password", vmauthData.password,
-            "--type",     'batch',
-            "--stuff",    'spec/oefgc.tgz',
-            "--exercise", exercise1.safecookie,
-            "--timeout",  5,
-            "--retry",    2,
-            "--counter",  450,
-            "--follow"
-        ]).then(function (batch) {
-            agent.process([
-                "-V",
-                "--type", "resume",
-                "--batch", "file:2-multiJobStudentReport.xml"
-            ]).then(function (batch) {
-                expect(batch).toBeDefined();
-                expect(batch.finishedjobs).toBe(batch.totaljobs);
-                expect(batch.jobs.third).toBeDefined();
-                done();
-            }, faildone);
         }, faildone);
     }, 500*1000); // 500 seconds
 

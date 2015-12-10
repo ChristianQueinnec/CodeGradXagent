@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fw4ex version="1.0"><exerciseAuthorReport exerciseid="161A76E2-9CD4-11E5-A54C-BA3D2BC494F4" safecookie="UMp0fgSJpSrPQw3RcU8EwBa5tC6k52EeCSn6azvgOBOLA8OubItrICHMY0x3sPKegPPABExCflk5D_xUKUnv1jp0X_pd0U-GIIit9TbSYgyt-ZkHAvREr2BUdX5Bj6rbRdleszx9-coenr5j2OBd_GS0nsC6HZikyCY9sFgYkOtTb_HmxUKB2UxPtDZwAN_714m7hlfgqh-syr7q4HSIFOORm8mRKiu7hwNYvyPSEyqJQnWkTx7yfZzh6xs7H0BJElE82HnM092GOsf0yZKFp20idCh0aIFsydC1fKvxMv0IcY8VoQkJ07YF7AjgwaLZpC7IQgIUinn77BELhUt9eeZd-mBd7cZeMcspOVxo1avUg6MitZ9S6ZN_C_wj541aR1Eu9XpXTpCOiT3DHfIA-qOnY4qPObrx0a0vo1P0GNeBSu1O1zS2zjoAq-F1jaT0yoAlcxxVvhq7saQv0Z4hj1y1b9485NT8V63KPSYqHgO0cJgK_q18C3nFtrpZWaRygy1Wx6Hzg79GS0zNhGiUxg_HC5q870jLOmU5g6tWougIFg0Zyvt6H78cs9TArrLGLEB5FmvU9JbFatHa6HSsHR4bNWhOnETOJzJmupKnVgp3QIVxY4xyzgqtwYF83JwVb2hw_nzQgHIqIDSBJYbtBSQoyxt4AZPpNIXgK7cbCePw@"><identification name="org.example.fw4ex.grading.check" nickname="intern3" date="2013-04-17T09:25:00Z">
+      <summary> Test de bon fonctionnement </summary>
+      <tags>
+        <tag name="Paracamplus"/>
+        <tag name="intern"/>
+      </tags>
+      <authorship>
+        <author>
+          <firstname>Christian</firstname>
+          <lastname>Queinnec</lastname>
+          <email>christian.queinnec@paracamplus.com</email>
+        </author>
+      </authorship>
+    </identification><pseudojobs totaljobs="3" finishedjobs="3"><!--
+
+--><pseudojob jobid="17CD5612-9CD4-11E5-B270-A19C77B4402B" location="/s/1/7/C/D/5/6/1/2/9/C/D/4/1/1/E/5/B/2/7/0/A/1/9/C/7/7/B/4/4/0/2/B" duration="1"><submission name="null" expectedMark="0">
+        <content>
+          <file basename="nothing" content=""/>
+        </content>
+      </submission><marking archived="2015-12-07T11:17:25" started="2015-12-07T11:17:33Z" ended="2015-12-07T11:17:33Z" finished="2015-12-07T11:17:39" mark="0" totalMark="100"><machine nickname="debian 4.0r3 (etch)" version="1"/><exercise exerciseid="161A76E29CD411E5A54CBA3D2BC494F4"/></marking></pseudojob><!--
+
+--><pseudojob jobid="202F7268-9CD4-11E5-B270-A19C77B4402B" location="/s/2/0/2/F/7/2/6/8/9/C/D/4/1/1/E/5/B/2/7/0/A/1/9/C/7/7/B/4/4/0/2/B" duration="1"><submission name="half" expectedMark="45">
+        <content>
+          <file basename="mark.txt" content="45"/>
+        </content>
+      </submission><marking archived="2015-12-07T11:17:39" started="2015-12-07T11:17:45Z" ended="2015-12-07T11:17:45Z" finished="2015-12-07T11:17:51" mark="45" totalMark="100"><exercise exerciseid="161A76E29CD411E5A54CBA3D2BC494F4"/><partialMark name="one" mark="45"/></marking></pseudojob><!--
+
+--><pseudojob jobid="278005E6-9CD4-11E5-B270-A19C77B4402B" location="/s/2/7/8/0/0/5/E/6/9/C/D/4/1/1/E/5/B/2/7/0/A/1/9/C/7/7/B/4/4/0/2/B" duration="2"><submission name="perfect" expectedMark="100">
+        <content>
+          <file basename="mark.txt" content="100"/>
+        </content>
+      </submission><marking archived="2015-12-07T11:17:51" started="2015-12-07T11:18:02Z" ended="2015-12-07T11:18:03Z" finished="2015-12-07T11:18:03" mark="100" totalMark="100"><exercise exerciseid="161A76E29CD411E5A54CBA3D2BC494F4"/><partialMark name="one" mark="100"/></marking></pseudojob></pseudojobs><report/></exerciseAuthorReport></fw4ex>

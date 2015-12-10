@@ -1,0 +1,72 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<fw4ex version='1.0'>
+  <multiJobStudentReport batchid='1C4C1072-9C4B-11E5-B151-DEE8CFBF97A5' 
+     archived='2015-12-06T18:56:51' finishedjobs='9' totaljobs='9'
+     label='batch.test' >
+    <exercise exerciseid='11111111-1111-1111-2221-000001000001' totalMark='1'/>
+    
+    <jobStudentReport jobid='1C53623C-9C4B-11E5-AE31-F308958AB1D9'
+         location='/s/1/C/5/3/6/2/3/C/9/C/4/B/1/1/E/5/A/E/3/1/F/3/0/8/9/5/8/A/B/1/D/9'
+         problem='0' label='first' >
+      <marking started='2015-12-06 19:59:15+01' finished='2015-12-06 19:59:16+01'
+               mark='0' totalMark='1' />
+    </jobStudentReport>
+
+    <jobStudentReport jobid='1C5AE0C0-9C4B-11E5-AFB8-F64C000F05D4'
+         location='/s/1/C/5/A/E/0/C/0/9/C/4/B/1/1/E/5/A/F/B/8/F/6/4/C/0/0/0/F/0/5/D/4'
+         problem='0' label='second' >
+      <marking started='2015-12-06 19:57:27+01' finished='2015-12-06 19:57:33+01'
+               mark='0' totalMark='1' />
+    </jobStudentReport>
+
+    <jobStudentReport jobid='1C604A4C-9C4B-11E5-920E-86D4B79820C1'
+         location='/s/1/C/6/0/4/A/4/C/9/C/4/B/1/1/E/5/9/2/0/E/8/6/D/4/B/7/9/8/2/0/C/1'
+         problem='0' label='third' >
+      <marking started='2015-12-06 19:58:58+01' finished='2015-12-06 19:59:03+01'
+               mark='0' totalMark='1' />
+    </jobStudentReport>
+
+    <jobStudentReport jobid='1C6781A4-9C4B-11E5-9690-A39EE5DCEDC3'
+         location='/s/1/C/6/7/8/1/A/4/9/C/4/B/1/1/E/5/9/6/9/0/A/3/9/E/E/5/D/C/E/D/C/3'
+         problem='0' label='fourth' >
+      <marking started='2015-12-06 19:58:23+01' finished='2015-12-06 19:58:29+01'
+               mark='0' totalMark='1' />
+    </jobStudentReport>
+
+    <jobStudentReport jobid='1C6D2FA0-9C4B-11E5-AB63-92364F964E2B'
+         location='/s/1/C/6/D/2/F/A/0/9/C/4/B/1/1/E/5/A/B/6/3/9/2/3/6/4/F/9/6/4/E/2/B'
+         problem='0' label='fifth' >
+      <marking started='2015-12-06 19:58:40+01' finished='2015-12-06 19:58:41+01'
+               mark='0' totalMark='1' />
+    </jobStudentReport>
+
+    <jobStudentReport jobid='1C729288-9C4B-11E5-843B-A016781191B8'
+         location='/s/1/C/7/2/9/2/8/8/9/C/4/B/1/1/E/5/8/4/3/B/A/0/1/6/7/8/1/1/9/1/B/8'
+         problem='0' label='sixth' >
+      <marking started='2015-12-06 19:57:45+01' finished='2015-12-06 19:57:46+01'
+               mark='0' totalMark='1' />
+    </jobStudentReport>
+
+    <jobStudentReport jobid='1C7800BA-9C4B-11E5-A10F-D8712951CBAD'
+         location='/s/1/C/7/8/0/0/B/A/9/C/4/B/1/1/E/5/A/1/0/F/D/8/7/1/2/9/5/1/C/B/A/D'
+         problem='0' label='seventh' >
+      <marking started='2015-12-06 19:57:58+01' finished='2015-12-06 19:57:58+01'
+               mark='0' totalMark='1' />
+    </jobStudentReport>
+
+    <jobStudentReport jobid='1C7DA63C-9C4B-11E5-8CD8-EDEDA2EDB6D3'
+         location='/s/1/C/7/D/A/6/3/C/9/C/4/B/1/1/E/5/8/C/D/8/E/D/E/D/A/2/E/D/B/6/D/3'
+         problem='0' label='eighth' >
+      <marking started='2015-12-06 19:58:10+01' finished='2015-12-06 19:58:16+01'
+               mark='0' totalMark='1' />
+    </jobStudentReport>
+
+    <jobStudentReport jobid='1C82FBE6-9C4B-11E5-ADC1-C2694953DD10'
+         location='/s/1/C/8/2/F/B/E/6/9/C/4/B/1/1/E/5/A/D/C/1/C/2/6/9/4/9/5/3/D/D/1/0'
+         problem='0' label='nineth' >
+      <marking started='2015-12-06 19:57:04+01' finished='2015-12-06 19:57:10+01'
+               mark='0' totalMark='1' />
+    </jobStudentReport>
+
+  </multiJobStudentReport>
+</fw4ex>

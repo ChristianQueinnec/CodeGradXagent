@@ -8,7 +8,7 @@ var Agent = require('../codegradxagent.js');
 var vmauthor = require('./vmauthor-data.js');
 var vmauthData = require('./vmauth-data.json');
 
-describe("CodeGradXagent process Job", function () {
+describe("CodeGradXagent process Batch", function () {
 
     function initializer (agent) {
         // User VMauthor's servers:
@@ -34,13 +34,14 @@ describe("CodeGradXagent process Job", function () {
     // Get the safecookie identifying exercise com.paracamplus.li205.function.1
     var exercise1;
 
-    it("should get hold of exercise", function (done) {
+    it("should get hold of one exercise", function (done) {
         agent = new CodeGradX.Agent(initializer);
         var faildone = make_faildone(done);
         var exerciseName = "com.paracamplus.li205.function.1";
         agent.process([
             "--user",     vmauthData.login,
-            "--password", vmauthData.password
+            "--password", vmauthData.password,
+            "--update-credentials"
         ]).then(function (user) {
             expect(user).toBeDefined();
             user.getCampaign('free').then(function (campaign) {
@@ -56,21 +57,53 @@ describe("CodeGradXagent process Job", function () {
         }, faildone);
     }, 10*1000); // 10 seconds
 
-    it("send a job", function (done) {
-        agent = new CodeGradX.Agent(initializer);
-        expect(CodeGradX.getCurrentAgent()).toBe(agent);
+    it("initiate a batch then resume it", function (done) {
+        agent = CodeGradX.getCurrentAgent();
+        var faildone = make_faildone(done);
+        function resumeBatch (batch) {
+            expect(batch).toBeDefined();
+            // Check that the batch is not yet completed:
+            // expect(batch.finishedjobs).toBeLessThan(batch.totaljobs);
+            agent.process([
+                "-V",
+                "--resume",   '601-multiJobSubmittedReport.xml',
+                "--counter",  651,
+                "--timeout",   10,
+                "--retry",     30,
+                "--follow"
+            ]).then(function (batch2) {
+                // normally 6[05]1-multiJobSubmittedReport.xml are equal
+                expect(batch2).toBeDefined();
+                expect(batch2.finishedjobs).toBe(batch2.totaljobs);
+                done();
+            }, faildone);
+        }
+        agent.process([
+            "-V",
+            "--type",     'batch',
+            "--stuff",    'spec/oefgc.tgz',
+            "--exercise", exercise1.safecookie,
+            "--offset",   10,
+            "--timeout",   5,
+            "--retry",     3,
+            "--counter",  600,
+            "--follow"
+        ]).then(resumeBatch).catch(resumeBatch);
+    }, 500*1000); // 500 seconds
+
+    it("resume the former (already completed) batch", function (done) {
+        agent = CodeGradX.getCurrentAgent();
         var faildone = make_faildone(done);
         agent.process([
-            "-v",
-            "--user",     vmauthData.login,
-            "--password", vmauthData.password,
-            "--type",     'job',
-            "--stuff",    'spec/min.c',
-            "--exercise", exercise1.safecookie
-        ]).then(function (job) {
-            expect(job).toBeDefined();
+            "--resume",   '601-multiJobSubmittedReport.xml',
+            "--counter",  671,
+            "--follow"
+        ]).then(function (batch) {
+            expect(batch).toBeDefined();
+            expect(batch.finishedjobs).toBe(batch.totaljobs);
+            expect(batch.jobs.third).toBeDefined();
             done();
         }, faildone);
-    }, 100*1000); // 100 seconds
+    }, 500*1000); // 500 seconds
 
 });

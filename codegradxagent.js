@@ -172,6 +172,11 @@ CodeGradX.Agent.prototype.process = function (strings) {
         agent.counter = commands.options.counter;
     }
 
+    if ( commands.options.resume ) {
+        // Default type for resumptions:
+        agent.commands.options.type = 'resume';
+    }
+
     function agentProcess () {
         return agent.processAuthentication()
             .then(_.bind(agent.processType, agent));
@@ -377,8 +382,10 @@ CodeGradX.Agent.prototype.processType = function (user) {
 
 CodeGradX.Agent.prototype.guessExercise = function (string) {
     var agent = this;
-    var results = string.match(/^file:(.*)$/);
     var exercise, index;
+
+    // file: should prefix an exerciseAuthorReport XML file:
+    var results = string.match(/^file:(.*)$/);
     if ( results ) {
         var file = results[1];
         index = results[3] || 0;
@@ -393,6 +400,8 @@ CodeGradX.Agent.prototype.guessExercise = function (string) {
             return when.reject("Could not find safecookie within " + string);
         }
     }
+
+    // campaign: prefixes the name of a campaign:
     results = string.match(/^campaign:(.+)#(\d+)$/);
     if ( results ) {
         var campaignName = results[1];
@@ -438,7 +447,7 @@ CodeGradX.Agent.prototype.processJob = function () {
                 parameters.step = agent.commands.options.timeout;
             }
             if ( agent.commands.options.retry ) {
-                parameters.retry = agent.commands.options.retry;
+                parameters.attempts = agent.commands.options.retry;
             }
             function cannotSendAnswer (reason) {
                 agent.state.log.debug("Could not send file").show();
@@ -453,7 +462,7 @@ CodeGradX.Agent.prototype.processJob = function () {
                         agent.debug("Waiting for marking report");
                         return job.getReport(parameters)
                             .catch(_.bind(agent.cannotGetReport, agent))
-                                .then(_.bind(agent.storeJobReports, agent))
+                            .then(_.bind(agent.storeJobReports, agent))
                             .catch(_.bind(agent.cannotStoreReport, agent));
                     }).catch(_.bind(agent.cannotStoreReport, agent));
             }
@@ -501,13 +510,112 @@ CodeGradX.Agent.prototype.storeJobReports = function (job) {
 };
 
 CodeGradX.Agent.prototype.cannotStoreReport = function (reason) {
+    var agent = this;
     agent.debug("Could not store report", reason);
     throw reason;
 };
 
 CodeGradX.Agent.prototype.cannotGetReport = function (reason) {
+    var agent = this;
     agent.debug("Could not get report", reason);
     throw reason;
+};
+
+/** Store a Batch report (even not completed): a multiJobStudentReport
+    XML document. 
+
+    @param {Batch} batch
+    @returns {Promise<Batch>}
+
+*/
+
+CodeGradX.Agent.prototype.storeBatchReport = function (batch) {
+    var agent = this;
+    agent.debug("Got batch final report", batch.batchid);
+    function returnBatch () {
+        return when(batch);
+    }
+    function fetchJobs () {
+        if ( agent.commands.options.follow ) {
+            agent.debug("Fetching individual jobs...");
+            var promise, promises = [];
+            _.forEach(batch.jobs, function (job) {
+                if ( ! job._stored ) {
+                    promise = job.getReport()
+                        .then(_.bind(agent.storeJobReports, agent));
+                    promises.push(promise);
+                }
+            });
+            return when.all(promises);
+        } else {
+            return when(batch);
+        }
+    }
+    return agent.writeReport(batch.XMLreport, 
+                             'multiJobStudentReport', 
+                             'xml')
+        .then(fetchJobs)
+        .then(returnBatch);
+};
+
+CodeGradX.Agent.prototype.storeExerciseReport = function (exercise) {
+    var agent = this;
+    function returnExercise () {
+        return when(exercise);
+    }
+    function fetchPseudoJobs () {
+        if ( agent.commands.options.follow ) {
+            agent.debug("Fetching individual pseudo-jobs...");
+            var promise, promises = [];
+            _.forEach(exercise.pseudojobs, function (job) {
+                promise = job.getReport()
+                    .then(_.bind(agent.storeJobReports, agent));
+                promises.push(promise);
+            });
+            return when.all(promises);
+        } 
+        return when(exercise);
+    }
+    agent.debug("Got exercise autocheck report");
+    return agent.writeReport(exercise.XMLauthorReport,
+                             'exerciseAuthorReport',
+                             'xml')
+        .then(fetchPseudoJobs)
+        .then(returnExercise);
+};
+
+/** Examine a Batch (even not completed) and fetch the grading reports
+    of already graded jobs. Use the `_stored` tag to fetch only once
+    the report.
+
+    @param {Batch} batch
+    @returns {Promise<Batch>}
+
+*/
+
+CodeGradX.Agent.prototype.fetchJobs = function (batch) {
+    var agent = this;
+    function returnBatch () {
+        return when(batch);
+    }
+    if ( agent.commands.options.follow &&
+         batch.finishedjobs > 0 ) {
+        agent.debug("Fetching in advance individual jobs...");
+        var promise, promises = [];
+        _.forEach(batch.jobs, function (job) {
+            if ( ! job._stored ) {
+                promise = job.getReport()
+                    .then(_.bind(agent.storeJobReports, agent))
+                    .then(function (job) {
+                        agent.debug("Stored report for job " + job.jobid);
+                        job._stored = true;
+                        return promise.done(job);
+                    });
+                promises.push(promise);
+            }
+        });
+        when.all(promises).then(returnBatch).catch(ignore);
+    }
 };
 
 /** Send a Batch and wait for the associated marking reports
@@ -523,34 +631,14 @@ CodeGradX.Agent.prototype.processBatch = function () {
     });
     function showProgress (parameters) {
         var batch = parameters.batch;
-        function fetchJobs () {
-            if ( agent.commands.options.follow &&
-                 batch.finishedjobs > 0 ) {
-                agent.debug("Fetching in advance individual jobs...");
-                var promise, promises = [];
-                _.forEach(batch.jobs, function (job) {
-                    if ( ! job._stored ) {
-                        promise = job.getReport()
-                        .then(_.bind(agent.storeJobReports, agent))
-                        .then(function (job) {
-                            agent.debug("Stored report for job " + job.jobid);
-                            job._stored = true;
-                            return done(job);
-                        });
-                        promises.push(promise);
-                    }
-                });
-                function ignore () { return; }
-                when.all(promises).then(ignore).catch(ignore);
-            }
-        }
+        function ignore () { return; }
         if ( batch ) {
             agent.debug("Marked jobs:", batch.finishedjobs, 
                         '/', (batch.totaljobs || '?'),
                         '   still waiting...');
             //agent.state.log.show();
             // Fetch job reports for already marked jobs:
-            fetchJobs();
+            agent.fetchJobs(batch);
         } else {
             agent.debug("Waiting...", parameters.i);
         }
@@ -562,38 +650,11 @@ CodeGradX.Agent.prototype.processBatch = function () {
         parameters.step = agent.commands.options.timeout;
     }
     if ( agent.commands.options.retry ) {
-        parameters.retry = agent.commands.options.retry;
+        parameters.attempts = agent.commands.options.retry;
     }
     function cannotSendBatch (reason) {
         agent.state.log.debug("Could not send batch file");
         throw reason;
-    }
-    function storeBatchReport (batch) {
-        agent.debug("Got batch final report", batch.batchid);
-        function returnBatch () {
-            return when(batch);
-        }
-        function fetchJobs () {
-            if ( agent.commands.options.follow ) {
-                agent.debug("Fetching individual jobs...");
-                var promise, promises = [];
-                _.forEach(batch.jobs, function (job) {
-                    if ( ! job._stored ) {
-                        promise = job.getReport()
-                            .then(_.bind(agent.storeJobReports, agent));
-                        promises.push(promise);
-                    }
-                });
-                return when.all(promises);
-            } else {
-                return when(batch);
-            }
-        }
-        return agent.writeReport(batch.XMLreport, 
-                                 'multiJobStudentReport', 
-                                 'xml')
-        .then(fetchJobs)
-        .then(returnBatch);
     }
     function getBatchReport (batch) {
         agent.debug("Batch sent, known as", batch.batchid);
@@ -604,7 +665,7 @@ CodeGradX.Agent.prototype.processBatch = function () {
                 agent.debug("Waiting for final batch completion report...");
                 return batch.getFinalReport(parameters)
                     .catch(_.bind(agent.cannotGetReport, agent))
-                    .then(storeBatchReport)
+                    .then(_.bind(agent.storeBatchReport, agent))
                     .catch(_.bind(agent.cannotStoreReport, agent));
             }).catch(_.bind(agent.cannotStoreReport, agent));
     }
@@ -628,35 +689,11 @@ CodeGradX.Agent.prototype.processExercise = function () {
         parameters.step = agent.commands.options.timeout;
     }
     if ( agent.commands.options.retry ) {
-        parameters.retry = agent.commands.options.retry;
+        parameters.attempts = agent.commands.options.retry;
     }
     function cannotSendExercise (reason) {
         agent.state.log.debug("Could not send exercise file");
         throw reason;
-    }
-    function storeExerciseReport (exercise) {
-        function returnExercise () {
-            return when(exercise);
-        }
-        function fetchPseudoJobs () {
-            if ( agent.commands.options.follow ) {
-                agent.debug("Fetching individual pseudo-jobs...");
-                var promise, promises = [];
-                _.forEach(exercise.pseudojobs, function (job) {
-                    promise = job.getReport()
-                        .then(_.bind(agent.storeJobReports, agent));
-                    promises.push(promise);
-                });
-                return when.all(promises);
-            } 
-            return when(exercise);
-        }
-        agent.debug("Got exercise autocheck report");
-        return agent.writeReport(exercise.XMLauthorReport,
-                                 'exerciseAuthorReport',
-                                 'xml')
-        .then(fetchPseudoJobs)
-        .then(returnExercise);
     }
     function getExerciseReport (exercise) {
         agent.debug("Exercise sent, known as", exercise.name);
@@ -667,7 +704,7 @@ CodeGradX.Agent.prototype.processExercise = function () {
             agent.debug("Waiting for exercise autocheck report...");
             return exercise.getExerciseReport(parameters)
             .catch(_.bind(agent.cannotGetReport, agent))
-            .then(storeExerciseReport)
+            .then(_.bind(agent.storeExerciseReport, agent))
             .catch(_.bind(agent.cannotStoreReport, agent));
         }).catch(_.bind(agent.cannotStoreReport, agent));
     }
@@ -677,6 +714,104 @@ CodeGradX.Agent.prototype.processExercise = function () {
         .catch(cannotSendExercise)
         .then(getExerciseReport);
 };
+
+/** Resume a former process. A previous exercise or batch was not finished
+    so resume it.
+
+    @returns {Promise<???>} 
+
+*/
+
+CodeGradX.Agent.prototype.processResume = function () {
+    var agent = this;
+    var file = agent.commands.options.resume;
+    var content = fs.readFileSync(file, 'utf8');
+    if ( content.match(/<multiJobSubmittedReport /) ) {
+        return agent.processResumeBatch(content);
+    } else if ( content.match(/<exerciseSubmittedReport/) ) {
+        return agent.processResumeExercise(content);
+    } else {
+        return when.reject(new Error("Cannot resume " + file));
+    }
+};
+
+/** Resume a former processBatch that is wait for the completion of the
+    Batch and fetch all the students' jobs.
+
+    @returns {Promise<Batch>} 
+
+*/
+
+CodeGradX.Agent.prototype.processResumeBatch = function (content) {
+    var agent = this;
+    function showProgress (parameters) {
+        var batch = parameters.batch;
+        function ignore () { return; }
+        if ( batch ) {
+            agent.debug("Marked jobs:", (batch.finishedjobs || '?'),
+                        '/', (batch.totaljobs || '?'),
+                        '   still waiting...');
+            //agent.state.log.show();
+            // Fetch job reports for already marked jobs:
+            agent.fetchJobs(batch);
+        } else {
+            agent.debug("Waiting...", parameters.i);
+        }
+    }
+    var parameters = {
+        progress: showProgress
+    };
+    if ( agent.commands.options.timeout ) {
+        parameters.step = agent.commands.options.timeout;
+    }
+    if ( agent.commands.options.retry ) {
+        parameters.attempts = agent.commands.options.retry;
+    }
+    return CodeGradX.parsexml(content).then(function (js) {
+        js = js.fw4ex.multiJobSubmittedReport;
+        var batch = new CodeGradX.Batch({
+            responseXML: content,
+            response: js,
+            personid: CodeGradX._str2num(js.person.$.personid),
+            archived: CodeGradX._str2Date(js.batch.$.archived),
+            batchid:  js.batch.$.batchid,
+            pathdir:  js.$.location
+        });
+        return batch.getFinalReport(parameters)
+            .catch(_.bind(agent.cannotGetReport, agent))
+            .then(_.bind(agent.storeBatchReport, agent))
+            .catch(_.bind(agent.cannotStoreReport, agent));
+    });
+};
+
+CodeGradX.Agent.prototype.processResumeExercise = function (content) {
+    var agent = this;
+    var parameters = {};
+    if ( agent.commands.options.timeout ) {
+        parameters.step = agent.commands.options.timeout;
+    }
+    if ( agent.commands.options.retry ) {
+        parameters.attempts = agent.commands.options.retry;
+    }
+    return CodeGradX.parsexml(content).then(function (js) {
+        js = js.fw4ex.exerciseSubmittedReport;
+        var exercise = new CodeGradX.Exercise({
+          location: js.$.location,
+          personid: CodeGradX._str2num(js.person.$.personid),
+          exerciseid: js.exercise.$.exerciseid,
+          XMLsubmission: content
+        });
+        return exercise.getExerciseReport(parameters)
+        .catch(_.bind(agent.cannotGetReport, agent))
+        .then(_.bind(agent.storeExerciseReport, agent))
+        .catch(_.bind(agent.cannotStoreReport, agent));
+    });
+};
+
+/* *********************************************************************
+   Determine whether this module is used as a script or as a library.
+   If used as a script then process the arguments otherwise do nothing.
+*/
 
 if ( _.endsWith(process.argv[1], 'codegradxagent.js') ) {
     // We are running that script:
