@@ -17,7 +17,7 @@ spec/oefgc.tgz :
 
 # ############## NPM package
 
-CodeGradXagent.tgz :
+CodeGradXagent.tgz : clean
 	-rm -rf tmp
 	mkdir -p tmp
 	cd tmp/ && git clone https://github.com/ChristianQueinnec/CodeGradXagent.git
@@ -33,7 +33,7 @@ install : CodeGradXagent.tgz
 
 # Caution: npm takes the whole directory that is . and not the sole
 # content of CodeGradXagent.tgz 
-publish : README.pdf
+publish : clean README.pdf
 	git status .
 	-git commit -m "NPM publication `date`" .
 	git push

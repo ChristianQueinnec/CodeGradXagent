@@ -52,9 +52,6 @@ CodeGradX.Agent = function (initializer) {
         ['',   'offset=[NUMBER]',       "wait time before attempting"],
         ['',   'timeout=[NUMBER]',      "wait time between attempts"]
     ];
-    if ( _.isFunction(initializer) ) {
-        this.configuration = initializer(this.configuration);
-    }
     //console.log(this.parser);
     // .bindHelp() forces the process to exit after displaying help!
     this.credentialsFile = './.fw4ex.json';
