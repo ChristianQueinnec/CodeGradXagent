@@ -3,7 +3,7 @@
 // The vmauthor virtual machine is available from 
 //       http://paracamplus.com/CodeGradX/VM/latest/
 
-var CodeGradX = require('../codegradxlib.js');
+var CodeGradX = require('codegradxlib');
 var Agent = require('../codegradxagent.js');
 var vmauthor = require('./vmauthor-data.js');
 var vmauthData = require('./vmauth-data.json');

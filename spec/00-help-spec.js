@@ -1,6 +1,6 @@
 // 
 
-var CodeGradX = require('../codegradxlib.js');
+var CodeGradX = require('codegradxlib');
 var Agent = require('../codegradxagent.js');
 
 describe("CodeGradXagent", function () {

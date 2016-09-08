@@ -3,7 +3,7 @@
 // The vmauthor virtual machine is available from 
 //       http://paracamplus.com/CodeGradX/VM/latest/
 
-var CodeGradX = require('../codegradxlib.js');
+var CodeGradX = require('codegradxlib');
 var Agent = require('../codegradxagent.js');
 var vmauthor = require('./vmauthor-data.js');
 var vmauthData = require('./vmauth-data.json');
@@ -97,25 +97,25 @@ describe("CodeGradXagent process Job", function () {
         }, faildone);
     }, 100*1000); // 100 seconds
 
-    it("send a job against this new exercise specified with campaign:", 
-       function (done) {
-        var agent = CodeGradX.getCurrentAgent();
-        expect(agent).toBeDefined();
-        var faildone = make_faildone(done);
-        agent.process([
-            "--Verbose",
-            "--user",     vmauthData.login,
-            "--password", vmauthData.password,
-            "--exercise", 'campaign:free#2',
-            "--counter",  300,
-            "--offset",    7,
-            "--type",     'job',
-            "--stuff",    'spec/min.c'
-        ]).then(function (job) {
-            expect(job).toBeDefined();
-            expect(job.mark).toBe(1);
-            done();
-        }, faildone);
-    }, 100*1000); // 100 seconds
+    // it("send a job against this new exercise specified with campaign:", 
+    //    function (done) {
+    //     var agent = CodeGradX.getCurrentAgent();
+    //     expect(agent).toBeDefined();
+    //     var faildone = make_faildone(done);
+    //     agent.process([
+    //         "--Verbose",
+    //         "--user",     vmauthData.login,
+    //         "--password", vmauthData.password,
+    //         "--exercise", 'campaign:example#2',
+    //         "--counter",  300,
+    //         "--offset",    7,
+    //         "--type",     'job',
+    //         "--stuff",    'spec/min.c'
+    //     ]).then(function (job) {
+    //         expect(job).toBeDefined();
+    //         expect(job.mark).toBe(1);
+    //         done();
+    //     }, faildone);
+    // }, 100*1000); // 100 seconds
 
 });

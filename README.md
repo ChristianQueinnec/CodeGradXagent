@@ -3,14 +3,28 @@
 CodeGradXagent is a script providing a command line interface to ease
 interaction with the CodeGradX infrastructure. It internally uses the
 CodeGradXlib library (an npm module) that runs on top of Node.js.
-Reading the
-[page associated to the CodeGradXlib](https://www.npmjs.com/package/codegradxlib)
+Reading the [page associated to the CodeGradXlib
+](https://www.npmjs.com/package/codegradxlib)
 npm module is recommended.
 
 People interested in that script are mainly teachers wanting to mark a
 batch of students' files or authors of exercises. Basic knowledge of
 command line interface is required to automatize interactions with the
 CodeGradX infrastructure. Others may prefer a Web interface.
+
+## Installation
+
+```javascript
+npm install codegradxagent
+```
+
+Caution, if you are an author and wants to use the virtual machine for
+authors, named [VMauthor
+](http://paracamplus.com/CodeGradX/VM/CodeGradX-VMauthor-latest.img.bz2)
+You should also install the `codegradxvmauthor` module that configures the
+agent to use VMauthor rather than the real constellation of servers.
+See how to authenticate with VMauthor in the `codegradxvmauthor`
+documentation.
 
 ## Usage
 
@@ -30,8 +44,8 @@ If the `codegradxagent` script is executable, you may simply write:
 By default or with the `-h` or `--help` options, the script prints a
 short summary of the possible options.
 
-Two other global options are `-v` or `-V` asking the codegradxagent to
-be verbose and show what it does. The second option also asks the
+Two other global options, `-v` or `-V`, ask the codegradxagent to
+be verbose and to show what it does. The second option also asks the
 CodeGradXlib library to be verbose.
 
 ### Authentication
@@ -50,11 +64,13 @@ Therefore, a series of invocations of the script starts often with
 
 ```bash
 $ cat .fw4ex.json
-{ "login": "myLogin",
+{ "user": "myLogin",
   "password": "myPassword"
 }
 $ ./codegradxagent.js --update-credentials
 ```
+
+
 
 ### Sending an answer against an exercise
 
@@ -219,3 +235,10 @@ You may also set new options for time management.
 
 The `Samples` directory contains examples of XML files obtained
 from the CodeGradX infrastructure.
+
+Some features of the underlying library `codegradxlib` cannot be
+operated through `codegradxagent`. The most prominent one is probably
+the history of the user: its past jobs, batches and exercises.
+
+New features such as sending a whole directory as an exercise, checking
+the manifest `fw4ex.xml` could be added.

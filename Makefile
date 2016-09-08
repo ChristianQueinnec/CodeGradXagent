@@ -1,4 +1,4 @@
-work : lint tests
+work : lint tests README.pdf
 clean :
 	-rm -f .fw4ex.json [0-9]*ml
 
@@ -8,6 +8,7 @@ lint :
 	jshint codegradxagent.js spec/*.js
 
 tests : spec/oefgc.tgz
+#	./codegradxagent.js -h
 	-rm .fw4ex.json [0-9]*ml
 	jasmine
 
@@ -32,7 +33,7 @@ install : CodeGradXagent.tgz
 
 # Caution: npm takes the whole directory that is . and not the sole
 # content of CodeGradXagent.tgz 
-publish : 
+publish : README.pdf
 	git status .
 	-git commit -m "NPM publication `date`" .
 	git push
@@ -41,5 +42,12 @@ publish :
 	cd tmp/CodeGradXagent/ && npm version patch && npm publish
 	cp -pf tmp/CodeGradXagent/package.json .
 	rm -rf tmp
+
+# ############## Various experiments (not all finished)
+
+README.tex : README.md
+	pandoc -o README.tex -f markdown README.md 
+README.pdf : README.md
+	pandoc -o README.pdf -f markdown README.md 
 
 # end of Makefile

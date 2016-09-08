@@ -3,7 +3,7 @@
 // The vmauthor virtual machine is available from 
 //       http://paracamplus.com/CodeGradX/VM/latest/
 
-var CodeGradX = require('../codegradxlib.js');
+var CodeGradX = require('codegradxlib');
 var Agent = require('../codegradxagent.js');
 var vmauthor = require('./vmauthor-data.js');
 var vmauthData = require('./vmauth-data.json');
@@ -37,15 +37,15 @@ describe("CodeGradXagent process Job", function () {
     it("should get hold of exercise", function (done) {
         agent = new CodeGradX.Agent(initializer);
         var faildone = make_faildone(done);
-        var exerciseName = "com.paracamplus.li205.function.1";
+        var exerciseName = "org.example.li205.function.1";
         agent.process([
             "--user",     vmauthData.login,
             "--password", vmauthData.password
         ]).then(function (user) {
             expect(user).toBeDefined();
-            user.getCampaign('free').then(function (campaign) {
+            user.getCampaign('example').then(function (campaign) {
                 expect(campaign).toBeDefined();
-                expect(campaign.name).toBe('free');
+                expect(campaign.name).toBe('example');
                 campaign.getExercise(exerciseName).then(function (exercise) {
                     expect(exercise).toBeDefined();
                     exercise1 = exercise;

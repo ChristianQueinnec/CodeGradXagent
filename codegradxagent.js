@@ -26,7 +26,10 @@ var fs = require('fs');
 var when = require('when');
 var nodefn = require('when/node');
 var _ = require('lodash');
-var CodeGradX = require('./codegradxlib.js');
+var CodeGradX = require('codegradxlib');
+
+// Exports what CodeGradX exports:
+module.exports = CodeGradX;
 
 CodeGradX.Agent = function (initializer) {
     this.state = new CodeGradX.State();
@@ -49,10 +52,9 @@ CodeGradX.Agent = function (initializer) {
         ['',   'offset=[NUMBER]',       "wait time before attempting"],
         ['',   'timeout=[NUMBER]',      "wait time between attempts"]
     ];
-    this.parser = getopt.create(this.configuration);
-    this.parser.errorFunc = function (e) {
-        throw e;
-    };
+    if ( _.isFunction(initializer) ) {
+        this.configuration = initializer(this.configuration);
+    }
     //console.log(this.parser);
     // .bindHelp() forces the process to exit after displaying help!
     this.credentialsFile = './.fw4ex.json';
@@ -64,6 +66,10 @@ CodeGradX.Agent = function (initializer) {
     if ( _.isFunction(initializer) ) {
         agent = initializer.call(agent, agent);
     }
+    this.parser = getopt.create(this.configuration);
+    this.parser.errorFunc = function (e) {
+        throw e;
+    };
     CodeGradX.getCurrentAgent = function () {
         return agent;
     };
@@ -134,7 +140,7 @@ CodeGradX.Agent.prototype.debug = function () {
     console.log(msg);
 };
 
-/** Parse options and run the agent.
+/** Parse options then run the agent.
 
     @param {Array<string>} strings.
     @returns {Promise<???>} depending on option `type`
@@ -143,13 +149,58 @@ CodeGradX.Agent.prototype.debug = function () {
 
 CodeGradX.Agent.prototype.process = function (strings) {
     var agent = this;
-    var commands;
+    return agent.parseOptions(strings).run();
+}
+
+/** Run the agent.
+
+    @returns {Promise<???>} depending on option `type`
+
+*/
+
+CodeGradX.Agent.prototype.run = function () {
+    var agent = this;
+
+    if ( ! agent.commands ) {
+        return when.reject("Nothing to do!");
+    }
+
+    function agentProcess () {
+        return agent.processAuthentication()
+            .then(_.bind(agent.processType, agent));
+    }
+
+    if ( agent.commands.options &&
+         agent.commands.options.offset &&
+         agent.commands.options.offset > 0 ) {
+        var dt = agent.commands.options.offset * 1000;
+        agent.commands.options.offset = 0;
+        return when(agent).delay(dt).then(agentProcess);
+    }
+
+    return agentProcess();
+};
+
+/** Parse options.
+
+    @param {Array<string>} strings
+    @return {Agent}
+    @throw  {parseOptionsException}
+*/
+
+CodeGradX.Agent.prototype.parseOptions = function (strings) {
+    var agent = this;
+    var commands = {};
     try {
         commands = agent.getOptions(strings);
         agent.commands = commands;
     } catch (exc) {
-        agent.usage();
-        return when.reject(exc);
+        commands.length = 0;
+    }
+    //console.log(strings, commands);//DEBUG
+
+    if ( commands.length === 0 || ! commands.options ) {
+        commands.options = {help: 1};
     }
 
     // Process global options:
@@ -162,7 +213,7 @@ CodeGradX.Agent.prototype.process = function (strings) {
     }
     if ( commands.options.help ) {
         agent.usage();
-        return when.reject(new Error("Help displayed"));
+        return agent;
     }
 
     if ( commands.options.xmldir ) {
@@ -176,21 +227,8 @@ CodeGradX.Agent.prototype.process = function (strings) {
         // Default type for resumptions:
         agent.commands.options.type = 'resume';
     }
-
-    function agentProcess () {
-        return agent.processAuthentication()
-            .then(_.bind(agent.processType, agent));
-    }
-
-    if ( commands.options.offset &&
-         commands.options.offset > 0 ) {
-        var dt = commands.options.offset * 1000;
-        commands.options.offset = 0;
-        return when(agent).delay(dt).then(agentProcess);
-    }
-
-    return agentProcess();
-};
+    return agent;
+}
 
 /** Handle authentication, read and/or update credentials.
     By default the credentials file is name `./fw4ex.json`.
@@ -816,10 +854,11 @@ CodeGradX.Agent.prototype.processResumeExercise = function (content) {
 if ( _.endsWith(process.argv[1], 'codegradxagent.js') ) {
     // We are running that script:
     var agent = new CodeGradX.Agent();
-    agent.process(process.argv.slice(2))
-    .catch(function (exc) {
+    try {
+        return agent.process(process.argv.slice(2));
+    } catch (exc) {
         console.log('Failure: ' + exc);
-    });
+    }
 }
 
 // end of codegradxagent.js
