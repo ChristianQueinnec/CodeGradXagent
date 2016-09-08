@@ -150,7 +150,7 @@ CodeGradX.Agent.prototype.debug = function () {
 CodeGradX.Agent.prototype.process = function (strings) {
     var agent = this;
     return agent.parseOptions(strings).run();
-}
+};
 
 /** Run the agent.
 
@@ -228,7 +228,7 @@ CodeGradX.Agent.prototype.parseOptions = function (strings) {
         agent.commands.options.type = 'resume';
     }
     return agent;
-}
+};
 
 /** Handle authentication, read and/or update credentials.
     By default the credentials file is name `./fw4ex.json`.
