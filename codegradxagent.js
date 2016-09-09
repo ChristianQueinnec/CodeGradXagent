@@ -43,7 +43,7 @@ CodeGradX.Agent = function (initializer) {
         ['',   'update-credentials',    "Update JSON file holding credentials"],
         ['',   'stuff=[FILE]',          "the file to submit"],
         ['',   'follow',                "fetch the derived reports"],
-        ['d',  'xmldir',                "directory where to store reports"],
+        ['d',  'xmldir=[DIR]',          "directory where to store reports"],
         ['c',  'counter=[NUMBER]',      "start value when counting reports"],
         ['t',  'type=[TYPE]',           "type of submission"],
         ['e',  'exercise=[SAFECOOKIE]', "identifier of an exercise"],
@@ -310,9 +310,9 @@ CodeGradX.Agent.prototype.processAuthentication = function () {
                     agent.state.currentCookie = agent.credentials.cookie;
                     return agent.state.getAuthenticatedUser(
                         agent.credentials.user,
-                        agent.credentials.password )
+                        agent.credentials.password || '' )
                         .then(updateCredentials)
-                       .catch(couldNotAuthenticate);
+                        .catch(couldNotAuthenticate);
 
                 } else {
                     var error1 = new Error("Could not authenticate");
@@ -420,6 +420,7 @@ CodeGradX.Agent.prototype.guessExercise = function (string) {
     var exercise, index;
 
     // file: should prefix an exerciseAuthorReport XML file:
+    // FUTURE: allow file:(.*)#(\d+)
     var results = string.match(/^file:(.*)$/);
     if ( results ) {
         var file = results[1];
