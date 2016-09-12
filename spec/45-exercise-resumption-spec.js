@@ -24,8 +24,8 @@ describe("CodeGradXagent process Job", function () {
 
     function make_faildone (done) {
         return function faildone (reason) {
-            //agent.state.debug(reason).show();
-            //console.log(reason);
+            agent.state.debug(reason).show();
+            console.log(reason);
             fail(reason);
             done();
         };
@@ -46,7 +46,7 @@ describe("CodeGradXagent process Job", function () {
             "--stuff",    exerciseTGZFile1,
             "--counter",  350,
             "--timeout",  3,
-            "--retry",     2
+            "--retry",    2
         ]).then(function (exercise) {
             expect(exercise).toBeDefined();
             agent.process([

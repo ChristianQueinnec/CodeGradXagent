@@ -14,6 +14,10 @@ tests : clean spec/oefgc.tgz
 	-rm .fw4ex.json [0-9]*ml
 	jasmine
 
+reset :
+	npm install -g codegradxlib
+	npm link codegradxlib
+
 refresh :
 	cp -p ../CodeGradXlib/codegradxlib.js \
 	   node_modules/codegradxlib/

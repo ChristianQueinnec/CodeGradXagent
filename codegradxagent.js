@@ -399,7 +399,7 @@ CodeGradX.Agent.prototype.processType = function (user) {
     } else if ( type === 'resume' ) {
         return agent.processResume();
     } else {
-        return when(agent.state.currentUser);
+        return CodeGradX.getCurrentUser();
     }
 };
 
@@ -506,7 +506,7 @@ CodeGradX.Agent.prototype.processJob = function () {
             return exercise
                 .sendFileAnswer(agent.commands.options.stuff)
                 .catch(cannotSendAnswer)
-                    .then(getJobReport);
+                .then(getJobReport);
         });
 };
 
@@ -728,7 +728,7 @@ CodeGradX.Agent.prototype.processExercise = function () {
         parameters.attempts = agent.commands.options.retry;
     }
     function cannotSendExercise (reason) {
-        agent.state.log.debug("Could not send exercise file");
+        agent.state.log.debug("Could not send exercise file " + reason);
         throw reason;
     }
     function getExerciseReport (exercise) {
@@ -746,7 +746,7 @@ CodeGradX.Agent.prototype.processExercise = function () {
     }
     agent.debug("Sending exercise...");
     return agent.state.currentUser
-        .submitNewExercise(agent.commands.options.stuff)
+        .submitNewExercise(agent.commands.options.stuff, parameters)
         .catch(cannotSendExercise)
         .then(getExerciseReport);
 };
@@ -856,6 +856,7 @@ if ( _.endsWith(process.argv[1], 'codegradxagent.js') ) {
         return agent.process(process.argv.slice(2));
     } catch (exc) {
         console.log('Failure: ' + exc);
+        agent.state.log.show();
     }
 }
 
