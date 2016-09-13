@@ -33,7 +33,9 @@ spec/oefgc.tgz :
 # Caution: npm takes the whole directory that is . and not the sole
 # content of CodeGradXagent.tgz 
 
-publish : clean README.pdf
+publish : clean
+	-rm -rf node_modules/codegradxlib
+	npm install codegradxlib
 	git status .
 	-git commit -m "NPM publication `date`" .
 	git push
