@@ -24,6 +24,7 @@ describe("CodeGradXagent process Job", function () {
 
     function make_faildone (done) {
         return function faildone (reason) {
+            var agent = new CodeGradX.getCurrentAgent();
             agent.state.debug(reason).show();
             console.log(reason);
             fail(reason);
@@ -37,6 +38,23 @@ describe("CodeGradXagent process Job", function () {
         var agent = CodeGradX.getCurrentAgent();
         expect(agent).toBeDefined();
         var faildone = make_faildone(done);
+        function resume (reason) {
+            agent.debug(reason); // waitedTooMuch
+            agent.process([
+                "-v",
+                "--resume",   '351-exerciseSubmittedReport.xml',
+                "--retry",  10,
+                "--timeout", 3,
+                "--follow"
+            ]).then(function (exercise2) {
+                expect(exercise2.pseudojobs).toBeDefined();
+                expect(exercise2.pseudojobs.perfect).toBeDefined();
+                expect(exercise2.pseudojobs.perfect.mark).toBe(100);
+                // Normally 35[23]-exerciseAuthorReport.xml are equal
+                done();
+            })
+            .catch(faildone);
+        }
         agent.process([
             "-V",
             "--user",     vmauthData.login,
@@ -45,22 +63,14 @@ describe("CodeGradXagent process Job", function () {
             "--type",     'exercise',
             "--stuff",    exerciseTGZFile1,
             "--counter",  350,
-            "--timeout",  3,
+            "--timeout",  1,
             "--retry",    2
         ]).then(function (exercise) {
-            expect(exercise).toBeDefined();
-            agent.process([
-                "-v",
-                "--resume",   '351-exerciseSubmittedReport.xml',
-                "--follow"
-            ]).then(function (exercise2) {
-                expect(exercise2.pseudojobs).toBeDefined();
-                expect(exercise2.pseudojobs.perfect).toBeDefined();
-                expect(exercise2.pseudojobs.perfect.mark).toBe(100);
-                // Normally 35[23]-exerciseAuthorReport.xml are equal
-                done();
-            }, faildone);
-        }, faildone);
+            agent.debug("should not be finished yet!");
+            faildone();
+        })
+        .catch(resume)
+        .catch(faildone);
     }, 400*1000); // 400 seconds
 
 });

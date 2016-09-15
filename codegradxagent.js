@@ -732,7 +732,7 @@ CodeGradX.Agent.prototype.processExercise = function () {
         throw reason;
     }
     function getExerciseReport (exercise) {
-        agent.debug("Exercise sent, known as", exercise.name);
+        agent.debug("Exercise sent as ", exercise.exerciseid);
         return agent.writeReport(exercise.XMLsubmission,
                                  "exerciseSubmittedReport",
                                  "xml")
