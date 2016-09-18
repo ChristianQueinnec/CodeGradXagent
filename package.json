@@ -1,6 +1,6 @@
 {
   "name": "codegradxagent",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "description": "Command line script to interact with the CodeGradX infrastructure.",
   "keywords": [
     "CodeGradX",

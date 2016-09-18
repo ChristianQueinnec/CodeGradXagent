@@ -728,7 +728,7 @@ CodeGradX.Agent.prototype.processExercise = function () {
         parameters.attempts = agent.commands.options.retry;
     }
     function cannotSendExercise (reason) {
-        agent.state.log.debug("Could not send exercise file " + reason);
+        agent.debug("Could not send exercise file " + reason);
         throw reason;
     }
     function getExerciseReport (exercise) {
@@ -741,7 +741,15 @@ CodeGradX.Agent.prototype.processExercise = function () {
             return exercise.getExerciseReport(parameters)
             .catch(_.bind(agent.cannotGetReport, agent))
             .then(_.bind(agent.storeExerciseReport, agent))
-            .catch(_.bind(agent.cannotStoreReport, agent));
+            .catch(_.bind(agent.cannotStoreReport, agent))
+            .then(function (exercise) {
+                if ( exercise.safecookie ) {
+                    agent.debug("Exercise " + exercise.name + " deployed!");
+                } else {
+                    agent.debug("Erroneous exercise!");
+                }
+                return when(exercise);
+            });
         }).catch(_.bind(agent.cannotStoreReport, agent));
     }
     agent.debug("Sending exercise...");
