@@ -557,6 +557,24 @@ CodeGradX.Agent.prototype.cannotGetReport = function (reason) {
     throw reason;
 };
 
+CodeGradX.Agent.prototype.storeJobProblemReport = function (job) {
+    var agent = this;
+    agent.debug("Got job problem report", job.jobid);
+    function storeXMLReport (job) {
+        agent.debug("writing XML report");
+        return agent.writeReport(job.XMLproblemReport, 
+                                 'jobProblemReport', 
+                                 'xml');
+    }
+    function returnJob () {
+        return when(job);
+    }
+    return storeXMLReport(job)
+        .then(returnJob)
+        .catch(_.bind(agent.cannotStoreReport, agent))
+        .then(returnJob);
+};
+
 /** Store a Batch report (even not completed): a multiJobStudentReport
     XML document. 
 
@@ -602,11 +620,16 @@ CodeGradX.Agent.prototype.storeExerciseReport = function (exercise) {
     function fetchPseudoJobs () {
         if ( agent.commands.options.follow ) {
             agent.debug("Fetching individual pseudo-jobs...");
-            var promise, promises = [];
+            var promise, problemPromise, promises = [];
             _.forEach(exercise.pseudojobs, function (job) {
                 promise = job.getReport()
                     .then(_.bind(agent.storeJobReports, agent));
                 promises.push(promise);
+                if ( job.problem ) {
+                    problemPromise = job.getProblemReport()
+                        .then(_.bind(agent.storeJobProblemReport, agent));
+                    promises.push(problemPromise);
+                }
             });
             return when.all(promises);
         } 

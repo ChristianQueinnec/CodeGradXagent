@@ -9,7 +9,8 @@ var vmauthor = require('./vmauthor-data.js');
 var vmauthData = require('./vmauth-data.json');
 
 describe("CodeGradXagent process Job", function () {
-
+    CodeGradX.xml2html.default.markFactor = 1;
+    
     function initializer (agent) {
         // User VMauthor's servers:
         agent.state = new CodeGradX.State(vmauthor.initialize);

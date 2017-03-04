@@ -28,6 +28,9 @@ test-all :
 
 spec/oefgc.tgz :
 	cp -p ../CodeGradXlib/spec/oefgc.tgz spec/
+spec/org.example.fw4ex.bad.check.tgz :
+	cd spec; tar czf org.example.fw4ex.bad.check.tgz \
+		-C org.example.fw4ex.bad.check .
 
 # ############## NPM package
 # Caution: npm takes the whole directory that is . and not the sole
