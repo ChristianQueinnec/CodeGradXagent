@@ -42,6 +42,12 @@ If the `codegradxagent` script is executable, you may simply write:
 .../codegradxagent.js
 ```
 
+And, if `codegradxagent` is on your PATH, you just write:
+
+```sh
+codegradxagent.js
+```
+
 By default or with the `-h` or `--help` options, the script prints a
 short summary of the possible options.
 
@@ -111,7 +117,7 @@ interactions often yields reports in XML or JSON. These reports are
 stored in the directory specified by `--xmldir` (by default the
 current directory), their name is prefixed by an integer starting with
 the value of `--counter` (by default `0`). For instance, the
-previous command will produce three reports:
+previous command will produce some reports:
 - `1-jobSubmittedReport.xml` an intermediate report acknowledging the
   reception of a job to mark
 - `2-jobStudentReport.xml` the grading report containing the mark
@@ -120,6 +126,11 @@ previous command will produce three reports:
 - `3-jobStudentReport.html` an HTML translation of the grading report.
   You may prefer to run your own translation (this one is not very
   good).
+- `4-jobProblemReport.xml` is intended for authors of exercises and
+  contains information related to the bad behavior of the exercise.
+  The most common errors are that the output of the exercise is
+  invalid with respect to the XML grammar or some grading script is
+  erroneous.
 
 #### Time management
 

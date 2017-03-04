@@ -1,6 +1,6 @@
 # CodeGradXagent
 
-work : lint tests README.pdf
+work : lint tests 
 clean :
 	-rm -f .fw4ex.json [0-9]*ml
 
