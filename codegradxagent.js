@@ -137,6 +137,17 @@ CodeGradX.Agent.prototype.debug = function () {
     console.log(msg);
 };
 
+/** Display an error message and exit with an erroneous code.
+    This is a function not a method!
+
+    @param {object} reason
+*/
+
+CodeGradX.processErrorAndExit = function (reason) {
+    console.log(reason);
+    process.exit(1);
+};
+
 /** Parse options then run the agent.
 
     @param {Array<string>} strings.
@@ -146,7 +157,8 @@ CodeGradX.Agent.prototype.debug = function () {
 
 CodeGradX.Agent.prototype.process = function (strings) {
     var agent = this;
-    return agent.parseOptions(strings).run();
+    return agent.parseOptions(strings).run()
+        .catch(CodeGradX.processErrorAndExit);
 };
 
 /** Run the agent.
