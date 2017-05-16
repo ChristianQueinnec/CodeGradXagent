@@ -37,8 +37,8 @@ spec/org.example.fw4ex.bad.check.tgz :
 # content of CodeGradXagent.tgz 
 
 publish : clean
-	-rm -rf node_modules/codegradxlib
-	npm install codegradxlib
+	-rm -rf node_modules/codegradx*
+	npm install -S codegradxlib
 	git status .
 	-git commit -m "NPM publication `date`" .
 	git push
@@ -47,6 +47,7 @@ publish : clean
 	cd tmp/CodeGradXagent/ && npm version patch && npm publish
 	cp -pf tmp/CodeGradXagent/package.json .
 	rm -rf tmp
+	npm install -g codegradxagent
 
 CodeGradXagent.tgz : clean
 	-rm -rf tmp

@@ -634,13 +634,15 @@ CodeGradX.Agent.prototype.storeExerciseReport = function (exercise) {
             agent.debug("Fetching individual pseudo-jobs...");
             var promise, problemPromise, promises = [];
             _.forEach(exercise.pseudojobs, function (job) {
-                promise = job.getReport()
-                    .then(_.bind(agent.storeJobReports, agent));
-                promises.push(promise);
+                // When there is a problem, there is no jobReport!
                 if ( job.problem ) {
                     problemPromise = job.getProblemReport()
                         .then(_.bind(agent.storeJobProblemReport, agent));
                     promises.push(problemPromise);
+                } else {
+                    promise = job.getReport()
+                        .then(_.bind(agent.storeJobReports, agent));
+                    promises.push(promise);
                 }
             });
             return when.all(promises);
