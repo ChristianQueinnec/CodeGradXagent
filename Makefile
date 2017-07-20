@@ -48,6 +48,7 @@ publish : clean
 	cp -pf tmp/CodeGradXagent/package.json .
 	rm -rf tmp
 	npm install -g codegradxagent
+	m propagate
 
 CodeGradXagent.tgz : clean
 	-rm -rf tmp
@@ -62,6 +63,9 @@ REMOTE	=	www.paracamplus.com
 install : CodeGradXagent.tgz
 	rsync -avu CodeGradXagent.tgz \
 		${REMOTE}:/var/www/www.paracamplus.com/Resources/Javascript/
+
+propagate :
+	cd ../CodeGradXvmauthor ; npm install -S codegradxagent
 
 # ############## Various experiments (not all finished)
 
