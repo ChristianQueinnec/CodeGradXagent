@@ -12,6 +12,9 @@ lint :
 tests : clean spec/oefgc.tgz
 #	./codegradxagent.js -h
 	-rm .fw4ex.json [0-9]*ml
+	@echo " tests require a running vmauthor..."
+	ping -c 3 xvmauthor.codegradx.org
+	export NODE_TLS_REJECT_UNAUTHORIZED=0 ;\
 	jasmine
 
 reset :

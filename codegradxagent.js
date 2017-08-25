@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+// Time-stamp: "2017-08-25 11:49:06 queinnec"
+
 /**
 
  Command line utilities to interact with the CodeGradX infrastructure
@@ -157,8 +159,7 @@ CodeGradX.processErrorAndExit = function (reason) {
 
 CodeGradX.Agent.prototype.process = function (strings) {
     var agent = this;
-    return agent.parseOptions(strings).run()
-        .catch(CodeGradX.processErrorAndExit);
+    return agent.parseOptions(strings).run();
 };
 
 /** Run the agent.
@@ -222,6 +223,7 @@ CodeGradX.Agent.prototype.parseOptions = function (strings) {
     }
     if ( commands.options.help ) {
         agent.usage();
+        delete agent.commands;
         return agent;
     }
 
@@ -898,7 +900,8 @@ if ( _.endsWith(process.argv[1], 'codegradxagent.js') ) {
     // We are running that script:
     var agent = new CodeGradX.Agent();
     try {
-        return agent.process(process.argv.slice(2));
+        return agent.process(process.argv.slice(2))
+            .catch(CodeGradX.processErrorAndExit);
     } catch (exc) {
         console.log('Failure: ' + exc);
         agent.state.log.show();
