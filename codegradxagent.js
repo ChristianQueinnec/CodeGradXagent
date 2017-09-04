@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Time-stamp: "2017-08-25 11:49:06 queinnec"
+// Time-stamp: "2017-09-04 19:05:46 queinnec"
 
 /**
 
@@ -52,7 +52,8 @@ CodeGradX.Agent = function (initializer) {
         ['r',  'resume=[FILE]',         "resume job, exercise or batch"],
         ['',   'retry=[NUMBER]',        "number of attempts"],
         ['',   'offset=[NUMBER]',       "wait time before attempting"],
-        ['',   'timeout=[NUMBER]',      "wait time between attempts"]
+        ['',   'timeout=[NUMBER]',      "wait time between attempts"],
+        ['',   'campaign=[STRING]',     "name of a campaign"]
     ];
     //console.log(this.parser);
     // .bindHelp() forces the process to exit after displaying help!
@@ -412,6 +413,8 @@ CodeGradX.Agent.prototype.processType = function (user) {
         return agent.processBatch();
     } else if ( type === 'resume' ) {
         return agent.processResume();
+    } else if ( type === 'exercisesset' ) {
+        return agent.processExercisesSet();
     } else {
         return CodeGradX.getCurrentUser();
     }
@@ -796,6 +799,56 @@ CodeGradX.Agent.prototype.processExercise = function () {
         .submitNewExercise(agent.commands.options.stuff, parameters)
         .catch(cannotSendExercise)
         .then(getExerciseReport);
+};
+
+/** Upload an ExercisesSet. This requires the 'campaign' parameter to be set.
+
+    @returns {Promise<ExercisesSet>} 
+
+*/
+
+CodeGradX.Agent.prototype.processExercisesSet = function () {
+    var agent = this;
+    var parameters = {};
+    if ( agent.commands.options.timeout ) {
+        parameters.step = agent.commands.options.timeout;
+    }
+    if ( agent.commands.options.retry ) {
+        parameters.attempts = agent.commands.options.retry;
+    }
+    if ( ! agent.commands.options.campaign ) {
+        agent.debug("Missing campaign option");
+        throw "Missing campaign option";
+    }
+    if ( ! agent.commands.options.stuff ) {
+        agent.debug("Missing stuff option");
+        throw "Missing stuff option";
+    }
+    var campaignName = agent.commands.options.campaign;
+    function cannotGetCampaign (reason) {
+        agent.debug("Could not get campaign " + campaignName + ' ' + reason);
+        throw reason;
+    }
+    function cannotSendExercisesSet (reason) {
+        agent.debug("Could not send exercisesSet file " + reason);
+        throw reason;
+    }
+    function getExercisesSet (exercisesSet) {
+        agent.debug("ExercisesSet received");
+        return agent.writeReport(exercisesSet, "exercisesSet", "xml");
+    }
+    agent.debug("Getting campaign description");
+    return agent.state.currentUser.getCampaign(campaignName)
+        .then(function (campaign) {
+            expect(campaign).toBeDefined();
+            expect(campaign instanceof CodeGradX.Campaign).toBeTruthy();
+            //console.log(campaign);//DEBUG
+            agent.debug("Sending exercisesSet...");
+            return campaign
+                .uploadExercisesSet(agent.commands.options.stuff)
+                .catch(cannotSendExercisesSet)
+                .then(getExercisesSet);
+        }).catch(cannotGetCampaign);
 };
 
 /** Resume a former process. A previous exercise or batch was not finished

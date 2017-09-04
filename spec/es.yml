@@ -1,0 +1,11 @@
+---
+exercises:
+    prologue: |
+      New set of exercises 
+      This is a multi-line text.
+    1:
+      title: test
+      prologue: New exercises
+      1: org.example.li205.function.1
+      2: org.example.li362.sh.7
+      epilogue: Arrived here ? Good!
