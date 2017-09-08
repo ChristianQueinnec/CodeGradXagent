@@ -243,6 +243,38 @@ $ ./codegradxagent.js --resume 1-exerciseSubmittedReport.xml --follow
 
 You may also set new options for time management.
 
+### Updating a list of exercises
+
+After the creation of a new exercise, you may want to let students use
+that new exercise. You may send them the long URL leading to it or,
+you may add it to a dedicated Web page listing the exercises they
+should practice. A campaign is a concept of CodeGradX binding a group
+of students, a group of teachers and a list of exercises during a
+certain period of time. Here is how you may update that list of
+exercises.
+
+The `--type` option should be set to `exercisesset`. The `--campaign`
+option names the campaign and `--stuff` is a YAML file listing the
+exercises. The YAML file may look like:
+
+``` yaml
+exercises:
+    prologue: |
+      Exercises in some language
+      This is a multi-line text.
+    1:
+      title: first set of exerciss
+      prologue: make heavy use of closures
+      1: org.codegradx.js.min3.3
+      2: org.codegradx.js.min4.2
+      epilogue: Arrived here ? Good!
+    2:
+      title: second set of exercises
+      1: org.codegradx.js.min4.2
+```
+
+In return, you get the compiled JSON equivalent description.
+
 ## Miscellaneous
 
 The `Samples` directory contains examples of XML files obtained
