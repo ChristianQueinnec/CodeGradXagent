@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Time-stamp: "2017-09-04 19:05:46 queinnec"
+// Time-stamp: "2017-10-21 18:21:23 queinnec"
 
 /**
 
@@ -639,11 +639,15 @@ CodeGradX.Agent.prototype.storeExerciseReport = function (exercise) {
             agent.debug("Fetching individual pseudo-jobs...");
             var promise, problemPromise, promises = [];
             _.forEach(exercise.pseudojobs, function (job) {
-                // When there is a problem, there is no jobReport!
+                // When there is a problem, there might be no jobReport!
                 if ( job.problem ) {
                     problemPromise = job.getProblemReport()
                         .then(_.bind(agent.storeJobProblemReport, agent));
                     promises.push(problemPromise);
+                    promise = job.getReport()
+                        .then(_.bind(agent.storeJobReports, agent))
+                        .catch((reason) => "missing report");
+                    promises.push(promise);
                 } else {
                     promise = job.getReport()
                         .then(_.bind(agent.storeJobReports, agent));
