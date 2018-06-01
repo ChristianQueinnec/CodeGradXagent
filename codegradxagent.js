@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Time-stamp: "2017-10-21 18:21:23 queinnec"
+// Time-stamp: "2018-03-28 19:46:57 queinnec"
 
 /**
 
@@ -646,7 +646,9 @@ CodeGradX.Agent.prototype.storeExerciseReport = function (exercise) {
                     promises.push(problemPromise);
                     promise = job.getReport()
                         .then(_.bind(agent.storeJobReports, agent))
-                        .catch((reason) => "missing report");
+                        .catch(function (reason){
+                            return "missing report";
+                        });
                     promises.push(promise);
                 } else {
                     promise = job.getReport()
@@ -957,7 +959,7 @@ if ( _.endsWith(process.argv[1], 'codegradxagent.js') ) {
     // We are running that script:
     var agent = new CodeGradX.Agent();
     try {
-        return agent.process(process.argv.slice(2))
+        agent.process(process.argv.slice(2))
             .catch(CodeGradX.processErrorAndExit);
     } catch (exc) {
         console.log('Failure: ' + exc);

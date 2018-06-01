@@ -7,7 +7,7 @@ clean :
 # ############## Working rules:
 
 lint :
-	jshint codegradxagent.js spec/*.js
+	eslint codegradxagent.js
 
 tests : clean spec/oefgc.tgz
 #	./codegradxagent.js -h
