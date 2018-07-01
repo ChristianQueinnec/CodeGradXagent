@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Time-stamp: "2018-03-28 19:46:57 queinnec"
+// Time-stamp: "2018-06-14 17:44:06 queinnec"
 
 /**
 
@@ -23,15 +23,25 @@ infrastructure. It runs on Node.js.
 
  */
 
-var getopt = require('node-getopt');
-var fs = require('fs');
-var when = require('when');
-var nodefn = require('when/node');
-var _ = require('lodash');
-var CodeGradX = require('codegradxlib');
+const getopt = require('node-getopt');
+const fs = require('fs');
+const when = require('when');
+const nodefn = require('when/node');
+const _ = (function () {
+    const endsWith = require('lodash/endsWith');
+    const bind = require('lodash/bind');
+    const isFunction = require('lodash/isFunction');
+    const forEach = require('lodash/forEach');
+    return { endsWith, bind, isFunction, forEach };
+})();
+const CodeGradX = require('codegradxlib');
 
 // Exports what CodeGradX exports:
 module.exports = CodeGradX;
+
+function ignore (reason) {
+    return reason;
+}
 
 CodeGradX.Agent = function (initializer) {
     this.state = new CodeGradX.State();
@@ -58,10 +68,10 @@ CodeGradX.Agent = function (initializer) {
     //console.log(this.parser);
     // .bindHelp() forces the process to exit after displaying help!
     this.credentialsFile = './.fw4ex.json';
-    this.startTime = _.now();
+    this.startTime = Date.now();
     this.xmldir = '.';
     this.counter = 0;
-    var agent = this;
+    let agent = this;
     // Customize
     if ( _.isFunction(initializer) ) {
         agent = initializer.call(agent, agent);
@@ -92,7 +102,7 @@ CodeGradX.getCurrentAgent = function () {
 */
 
 CodeGradX.Agent.prototype.usage = function () {
-    var agent = this;
+    const agent = this;
     agent.parser.showHelp();
 };
 
@@ -117,15 +127,15 @@ CodeGradX.writeFileContent = function (filename, data) {
 */
 
 CodeGradX.Agent.prototype.debug = function () {
-    var agent = this;
+    const agent = this;
     if ( ! agent.verbose ) {
         return;
     }
-    var t = _.now() - agent.startTime; 
+    const t = Date.now() - agent.startTime; 
     // Separate seconds from milliseconds:
-    var msg = ('000'+t).replace(/(...)$/, ".$1") + ' ';
+    let msg = ('000'+t).replace(/(...)$/, ".$1") + ' ';
     msg = msg.replace(/^0*/, '');
-    for (var i=0 ; i<arguments.length ; i++) {
+    for (let i=0 ; i<arguments.length ; i++) {
         if ( arguments[i] === null ) {
             msg += 'null ';
         } else if ( arguments[i] === undefined ) {
@@ -159,7 +169,7 @@ CodeGradX.processErrorAndExit = function (reason) {
 */
 
 CodeGradX.Agent.prototype.process = function (strings) {
-    var agent = this;
+    const agent = this;
     return agent.parseOptions(strings).run();
 };
 
@@ -170,7 +180,7 @@ CodeGradX.Agent.prototype.process = function (strings) {
 */
 
 CodeGradX.Agent.prototype.run = function () {
-    var agent = this;
+    const agent = this;
 
     if ( ! agent.commands ) {
         return when.reject("Nothing to do!");
@@ -184,7 +194,7 @@ CodeGradX.Agent.prototype.run = function () {
     if ( agent.commands.options &&
          agent.commands.options.offset &&
          agent.commands.options.offset > 0 ) {
-        var dt = agent.commands.options.offset * 1000;
+        const dt = agent.commands.options.offset * 1000;
         agent.commands.options.offset = 0;
         return when(agent).delay(dt).then(agentProcess);
     }
@@ -200,8 +210,8 @@ CodeGradX.Agent.prototype.run = function () {
 */
 
 CodeGradX.Agent.prototype.parseOptions = function (strings) {
-    var agent = this;
-    var commands = {};
+    const agent = this;
+    let commands = {};
     try {
         commands = agent.getOptions(strings);
         agent.commands = commands;
@@ -250,7 +260,7 @@ CodeGradX.Agent.prototype.parseOptions = function (strings) {
 */
 
 CodeGradX.Agent.prototype.processAuthentication = function () {
-    var agent = this;
+    const agent = this;
     function updateCredentials (user) {
         agent.debug("Successful authentication of", user.email);
         if ( agent.commands.options['update-credentials'] ) {
@@ -285,7 +295,7 @@ CodeGradX.Agent.prototype.processAuthentication = function () {
         return agent.state.sendAXServer('x', {
             path: '/'
         }).catch(function (reason) {
-            agent.debug("Obsolete or wrong cookie");
+            agent.debug(`Obsolete or wrong cookie [${reason}]`);
             delete agent.state.currentCookie;
             return agent.processAuthentication();
         });
@@ -330,11 +340,11 @@ CodeGradX.Agent.prototype.processAuthentication = function () {
                         .catch(couldNotAuthenticate);
 
                 } else {
-                    var error1 = new Error("Could not authenticate");
+                    const error1 = new Error("Could not authenticate");
                     return couldNotAuthenticate(error1);
                 }
             }, function () {
-                var error2 = new Error("Could not read credentials");
+                const error2 = new Error("Could not read credentials");
                 return couldNotAuthenticate(error2);
             });
     }
@@ -351,8 +361,8 @@ CodeGradX.Agent.prototype.processAuthentication = function () {
 */
 
 CodeGradX.Agent.prototype.getOptions = function (strings) {
-    var agent = this;
-    var commands = {
+    const agent = this;
+    let commands = {
         options: {
             "send": false
         }
@@ -383,9 +393,9 @@ CodeGradX.Agent.prototype.getOptions = function (strings) {
 */
 
 CodeGradX.Agent.prototype.writeReport = function (content, label, suffix) {
-    var agent = this;
+    const agent = this;
     label = ('-' + label) || '';
-    var file = agent.xmldir + '/' + 
+    const file = agent.xmldir + '/' + 
         (++agent.counter) + label + '.' + suffix;
     return CodeGradX.writeFileContent(file, content)
     .then(function () {
@@ -402,9 +412,9 @@ CodeGradX.Agent.prototype.writeReport = function (content, label, suffix) {
 
 */
 
-CodeGradX.Agent.prototype.processType = function (user) {
-    var agent = this;
-    var type = agent.commands.options.type;
+CodeGradX.Agent.prototype.processType = function (/*user*/) {
+    const agent = this;
+    const type = agent.commands.options.type;
     if ( type === 'job' ) {
         return agent.processJob();
     } else if ( type === 'exercise' ) {
@@ -433,16 +443,16 @@ CodeGradX.Agent.prototype.processType = function (user) {
 */
 
 CodeGradX.Agent.prototype.guessExercise = function (string) {
-    var agent = this;
-    var exercise, index;
+    const agent = this;
+    let exercise, index;
 
     // file: should prefix an exerciseAuthorReport XML file:
     // FUTURE: allow file:(.*)#(\d+)
-    var results = string.match(/^file:(.*)$/);
+    let results = string.match(/^file:(.*)$/);
     if ( results ) {
-        var file = results[1];
+        const file = results[1];
         index = results[3] || 0;
-        var content = fs.readFileSync(file, 'utf8');
+        const content = fs.readFileSync(file, 'utf8');
         results = content.match(/<exerciseAuthorReport .* safecookie="([^"]+)"/);
         if ( results ) {
             exercise = new CodeGradX.Exercise({
@@ -457,9 +467,9 @@ CodeGradX.Agent.prototype.guessExercise = function (string) {
     // campaign: prefixes the name of a campaign:
     results = string.match(/^campaign:(.+)#(\d+)$/);
     if ( results ) {
-        var campaignName = results[1];
+        const campaignName = results[1];
         index = results[2] / 1;
-        var user = agent.state.currentUser;
+        const user = agent.state.currentUser;
         return user.getCampaign(campaignName)
         .then(function (campaign) {
             return campaign.getExercise(index)
@@ -467,7 +477,7 @@ CodeGradX.Agent.prototype.guessExercise = function (string) {
                 if ( exercise ) {
                     return when(exercise);
                 } else {
-                    var error = new Error("Cannot find exercise#" + index +
+                    const error = new Error("Cannot find exercise#" + index +
                        " of the " + campaign.name + " campaign");
                     return when.reject(error);
                 }
@@ -487,13 +497,14 @@ CodeGradX.Agent.prototype.guessExercise = function (string) {
 */
 
 CodeGradX.Agent.prototype.processJob = function () {
-    var agent = this;
+    const agent = this;
     return agent.guessExercise(agent.commands.options.exercise)
         .then(function (exercise) {
             //console.log(exercise);
-            var parameters = {
+            const parameters = {
+                _i: 0,
                 progress: function (parameters) {
-                    agent.debug("Waiting", parameters.i, "...");
+                    agent.debug("Waiting", parameters._i++, "...");
                 }
             };
             if ( agent.commands.options.timeout ) {
@@ -537,7 +548,7 @@ CodeGradX.Agent.prototype.processJob = function () {
     */
 
 CodeGradX.Agent.prototype.storeJobReports = function (job) {
-    var agent = this;
+    const agent = this;
     agent.debug("Got job marking report", job.jobid);
     function storeXMLReport (job) {
         agent.debug("writing XML report");
@@ -563,19 +574,19 @@ CodeGradX.Agent.prototype.storeJobReports = function (job) {
 };
 
 CodeGradX.Agent.prototype.cannotStoreReport = function (reason) {
-    var agent = this;
+    const agent = this;
     agent.debug("Could not store report", reason);
     throw reason;
 };
 
 CodeGradX.Agent.prototype.cannotGetReport = function (reason) {
-    var agent = this;
+    const agent = this;
     agent.debug("Could not get report", reason);
     throw reason;
 };
 
 CodeGradX.Agent.prototype.storeJobProblemReport = function (job) {
-    var agent = this;
+    const agent = this;
     agent.debug("Got job problem report", job.jobid);
     function storeXMLReport (job) {
         agent.debug("writing XML report");
@@ -601,7 +612,7 @@ CodeGradX.Agent.prototype.storeJobProblemReport = function (job) {
 */
 
 CodeGradX.Agent.prototype.storeBatchReport = function (batch) {
-    var agent = this;
+    const agent = this;
     agent.debug("Got batch final report", batch.batchid);
     function returnBatch () {
         return when(batch);
@@ -609,7 +620,7 @@ CodeGradX.Agent.prototype.storeBatchReport = function (batch) {
     function fetchJobs () {
         if ( agent.commands.options.follow ) {
             agent.debug("Fetching individual jobs...");
-            var promise, promises = [];
+            let promise, promises = [];
             _.forEach(batch.jobs, function (job) {
                 if ( ! job._stored ) {
                     promise = job.getReport()
@@ -630,14 +641,14 @@ CodeGradX.Agent.prototype.storeBatchReport = function (batch) {
 };
 
 CodeGradX.Agent.prototype.storeExerciseReport = function (exercise) {
-    var agent = this;
+    const agent = this;
     function returnExercise () {
         return when(exercise);
     }
     function fetchPseudoJobs () {
         if ( agent.commands.options.follow ) {
             agent.debug("Fetching individual pseudo-jobs...");
-            var promise, problemPromise, promises = [];
+            let promise, problemPromise, promises = [];
             _.forEach(exercise.pseudojobs, function (job) {
                 // When there is a problem, there might be no jobReport!
                 if ( job.problem ) {
@@ -646,7 +657,7 @@ CodeGradX.Agent.prototype.storeExerciseReport = function (exercise) {
                     promises.push(problemPromise);
                     promise = job.getReport()
                         .then(_.bind(agent.storeJobReports, agent))
-                        .catch(function (reason){
+                        .catch(function (/*reason*/){
                             return "missing report";
                         });
                     promises.push(promise);
@@ -678,14 +689,14 @@ CodeGradX.Agent.prototype.storeExerciseReport = function (exercise) {
 */
 
 CodeGradX.Agent.prototype.fetchJobs = function (batch) {
-    var agent = this;
+    const agent = this;
     function returnBatch () {
         return when(batch);
     }
     if ( agent.commands.options.follow &&
          batch.finishedjobs > 0 ) {
         agent.debug("Fetching in advance individual jobs...");
-        var promise, promises = [];
+        let promise, promises = [];
         _.forEach(batch.jobs, function (job) {
             if ( ! job._stored ) {
                 promise = job.getReport()
@@ -709,13 +720,12 @@ CodeGradX.Agent.prototype.fetchJobs = function (batch) {
 */
 
 CodeGradX.Agent.prototype.processBatch = function () {
-    var agent = this;
-    var exercise = new CodeGradX.Exercise({
+    const agent = this;
+    const exercise = new CodeGradX.Exercise({
         safecookie: agent.commands.options.exercise
     });
     function showProgress (parameters) {
-        var batch = parameters.batch;
-        function ignore () { return; }
+        const batch = parameters.batch;
         if ( batch ) {
             agent.debug("Marked jobs:", batch.finishedjobs, 
                         '/', (batch.totaljobs || '?'),
@@ -727,7 +737,7 @@ CodeGradX.Agent.prototype.processBatch = function () {
             agent.debug("Waiting...", parameters.i);
         }
     }
-    var parameters = {
+    const parameters = {
         progress: showProgress
     };
     if ( agent.commands.options.timeout ) {
@@ -767,8 +777,8 @@ CodeGradX.Agent.prototype.processBatch = function () {
 */
 
 CodeGradX.Agent.prototype.processExercise = function () {
-    var agent = this;
-    var parameters = {};
+    const agent = this;
+    const parameters = {};
     if ( agent.commands.options.timeout ) {
         parameters.step = agent.commands.options.timeout;
     }
@@ -814,8 +824,8 @@ CodeGradX.Agent.prototype.processExercise = function () {
 */
 
 CodeGradX.Agent.prototype.processExercisesSet = function () {
-    var agent = this;
-    var parameters = {};
+    const agent = this;
+    const parameters = {};
     if ( agent.commands.options.timeout ) {
         parameters.step = agent.commands.options.timeout;
     }
@@ -830,7 +840,7 @@ CodeGradX.Agent.prototype.processExercisesSet = function () {
         agent.debug("Missing stuff option");
         throw "Missing stuff option";
     }
-    var campaignName = agent.commands.options.campaign;
+    const campaignName = agent.commands.options.campaign;
     function cannotGetCampaign (reason) {
         agent.debug("Could not get campaign " + campaignName + ' ' + reason);
         throw reason;
@@ -846,8 +856,6 @@ CodeGradX.Agent.prototype.processExercisesSet = function () {
     agent.debug("Getting campaign description");
     return agent.state.currentUser.getCampaign(campaignName)
         .then(function (campaign) {
-            expect(campaign).toBeDefined();
-            expect(campaign instanceof CodeGradX.Campaign).toBeTruthy();
             //console.log(campaign);//DEBUG
             agent.debug("Sending exercisesSet...");
             return campaign
@@ -865,9 +873,9 @@ CodeGradX.Agent.prototype.processExercisesSet = function () {
 */
 
 CodeGradX.Agent.prototype.processResume = function () {
-    var agent = this;
-    var file = agent.commands.options.resume;
-    var content = fs.readFileSync(file, 'utf8');
+    const agent = this;
+    const file = agent.commands.options.resume;
+    const content = fs.readFileSync(file, 'utf8');
     if ( content.match(/<multiJobSubmittedReport /) ) {
         return agent.processResumeBatch(content);
     } else if ( content.match(/<exerciseSubmittedReport/) ) {
@@ -885,10 +893,9 @@ CodeGradX.Agent.prototype.processResume = function () {
 */
 
 CodeGradX.Agent.prototype.processResumeBatch = function (content) {
-    var agent = this;
+    const agent = this;
     function showProgress (parameters) {
-        var batch = parameters.batch;
-        function ignore () { return; }
+        const batch = parameters.batch;
         if ( batch ) {
             agent.debug("Marked jobs:", (batch.finishedjobs || '?'),
                         '/', (batch.totaljobs || '?'),
@@ -900,7 +907,7 @@ CodeGradX.Agent.prototype.processResumeBatch = function (content) {
             agent.debug("Waiting...", parameters.i);
         }
     }
-    var parameters = {
+    const parameters = {
         progress: showProgress
     };
     if ( agent.commands.options.timeout ) {
@@ -911,7 +918,7 @@ CodeGradX.Agent.prototype.processResumeBatch = function (content) {
     }
     return CodeGradX.parsexml(content).then(function (js) {
         js = js.fw4ex.multiJobSubmittedReport;
-        var batch = new CodeGradX.Batch({
+        const batch = new CodeGradX.Batch({
             responseXML: content,
             response: js,
             personid: CodeGradX._str2num(js.person.$.personid),
@@ -927,8 +934,8 @@ CodeGradX.Agent.prototype.processResumeBatch = function (content) {
 };
 
 CodeGradX.Agent.prototype.processResumeExercise = function (content) {
-    var agent = this;
-    var parameters = {};
+    const agent = this;
+    const parameters = {};
     if ( agent.commands.options.timeout ) {
         parameters.step = agent.commands.options.timeout;
     }
@@ -937,7 +944,7 @@ CodeGradX.Agent.prototype.processResumeExercise = function (content) {
     }
     return CodeGradX.parsexml(content).then(function (js) {
         js = js.fw4ex.exerciseSubmittedReport;
-        var exercise = new CodeGradX.Exercise({
+        const exercise = new CodeGradX.Exercise({
           location: js.$.location,
           personid: CodeGradX._str2num(js.person.$.personid),
           exerciseid: js.exercise.$.exerciseid,
@@ -957,7 +964,7 @@ CodeGradX.Agent.prototype.processResumeExercise = function (content) {
 
 if ( _.endsWith(process.argv[1], 'codegradxagent.js') ) {
     // We are running that script:
-    var agent = new CodeGradX.Agent();
+    const agent = new CodeGradX.Agent();
     try {
         agent.process(process.argv.slice(2))
             .catch(CodeGradX.processErrorAndExit);

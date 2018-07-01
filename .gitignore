@@ -3,4 +3,6 @@ codegradxlib.js
 node_modules/
 .fw4ex.json
 CodeGradXagent.tgz
-./[0-9]*ml
+[0-9]*ml
+spec/auth?-data.json
+spec/vmauth-data.json

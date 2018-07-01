@@ -11,6 +11,7 @@ var vmauth2Data = require('./vmauth2-data.json');
 
 describe("CodeGradXagent process exercisesSet", function () {
     CodeGradX.xml2html.default.markFactor = 1;
+    var agent;
     
     function initializer (agent) {
         // User VMauthor's servers:
@@ -20,27 +21,27 @@ describe("CodeGradXagent process exercisesSet", function () {
 
     it("should be loaded", function () {
         expect(Agent).toBeDefined();
-        var agent = new CodeGradX.Agent(initializer);
+        agent = new CodeGradX.Agent(initializer);
         expect(agent).toBeDefined();
     });
 
     function make_faildone (done) {
         return function faildone (reason) {
-            //agent.state.debug(reason).show();
-            //console.log(reason);
+            agent.state.debug(reason).show();
+            console.log(reason);
             fail(reason);
             done();
         };
     }
 
     it("should fail uploading an exercisesset, not teacher", function (done) {
-        var agent = new CodeGradX.Agent(initializer);
+        agent = new CodeGradX.Agent(initializer);
         expect(agent).toBeDefined();
         var faildone = make_faildone(done);
         agent.process([
             "-v",
-            "--user",     vmauthData.login,
-            "--password", vmauthData.password,
+            "--user",     vmauth2Data.login,
+            "--password", vmauth2Data.password,
             "--type",     'exercisesset',
             "--stuff",    'spec/es.yml',
             "--campaign", 'example',
@@ -51,13 +52,13 @@ describe("CodeGradXagent process exercisesSet", function () {
 
     it("should fail uploading an exercisesset, missing stuff",
        function (done) {
-        var agent = new CodeGradX.Agent(initializer);
+        agent = new CodeGradX.Agent(initializer);
         expect(agent).toBeDefined();
         var faildone = make_faildone(done);
         agent.process([
             "-v",
-            "--user",     vmauthData.login,
-            "--password", vmauthData.password,
+            "--user",     vmauth2Data.login,
+            "--password", vmauth2Data.password,
             "--type",     'exercisesset',
             //"--stuff",    'spec/es.yml',
             //"--campaign", 'example',
@@ -68,13 +69,13 @@ describe("CodeGradXagent process exercisesSet", function () {
 
     it("should fail uploading an exercisesset, missing campaign",
        function (done) {
-        var agent = new CodeGradX.Agent(initializer);
+        agent = new CodeGradX.Agent(initializer);
         expect(agent).toBeDefined();
         var faildone = make_faildone(done);
         agent.process([
             "-v",
-            "--user",     vmauth2Data.login,
-            "--password", vmauth2Data.password,
+            "--user",     vmauthData.login,
+            "--password", vmauthData.password,
             "--type",     'exercisesset',
             "--stuff",    'spec/es.yml',
             //"--campaign", 'example',
@@ -85,13 +86,13 @@ describe("CodeGradXagent process exercisesSet", function () {
 
     it("should succeed uploading an exercisesset", function (done) {
         expect(Agent).toBeDefined();
-        var agent = new CodeGradX.Agent(initializer);
+        agent = new CodeGradX.Agent(initializer);
         expect(agent).toBeDefined();
         var faildone = make_faildone(done);
         agent.process([
             "-v",
-            "--user",     vmauth2Data.login,
-            "--password", vmauth2Data.password,
+            "--user",     vmauthData.login,
+            "--password", vmauthData.password,
             "--type",     'exercisesset',
             "--stuff",    'spec/es.yml',
             "--campaign", 'example',

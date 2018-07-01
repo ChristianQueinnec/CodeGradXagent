@@ -1,6 +1,6 @@
 {
   "name": "codegradxagent",
-  "version": "1.0.22",
+  "version": "1.0.23",
   "description": "Command line script to interact with the CodeGradX infrastructure.",
   "keywords": [
     "CodeGradX",
@@ -17,7 +17,7 @@
     "url": "git+https://github.com/ChristianQueinnec/CodeGradXagent.git"
   },
   "dependencies": {
-    "codegradxlib": "^2.0.12",
+    "codegradxlib": "^2.0.15",
     "lodash": "^4.17.10",
     "node-getopt": "^0.2.3",
     "rest": "^1.3.2",

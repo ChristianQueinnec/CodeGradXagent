@@ -9,7 +9,7 @@ clean :
 lint :
 	eslint codegradxagent.js
 
-tests : clean spec/oefgc.tgz
+tests : clean lint spec/oefgc.tgz spec/org.example.fw4ex.bad.check.tgz
 #	./codegradxagent.js -h
 	-rm .fw4ex.json [0-9]*ml
 	@echo " tests require a running vmauthor..."
@@ -17,9 +17,10 @@ tests : clean spec/oefgc.tgz
 	export NODE_TLS_REJECT_UNAUTHORIZED=0 ;\
 	jasmine
 
-reset :
-	npm install -g codegradxlib
-	npm link codegradxlib
+update :
+	-rm -rf node_modules
+	npm install codegradxlib@`jq -r .version < ../CodeGradXlib/package.json`
+	npm install
 
 refresh :
 	cp -p ../CodeGradXlib/codegradxlib.js \
@@ -39,9 +40,9 @@ spec/org.example.fw4ex.bad.check.tgz :
 # Caution: npm takes the whole directory that is . and not the sole
 # content of CodeGradXagent.tgz 
 
-publish : clean
+publish : lint clean
 	-rm -rf node_modules/codegradx*
-	npm install -S codegradxlib
+	npm install codegradxlib@`jq -r .version < ../CodeGradXlib/package.json`
 	git status .
 	-git commit -m "NPM publication `date`" .
 	git push
@@ -50,7 +51,7 @@ publish : clean
 	cd tmp/CodeGradXagent/ && npm version patch && npm publish
 	cp -pf tmp/CodeGradXagent/package.json .
 	rm -rf tmp
-	npm install -g codegradxagent
+	npm install -g codegradxagent@`jq -r .version < package.json`
 	m propagate
 
 CodeGradXagent.tgz : clean

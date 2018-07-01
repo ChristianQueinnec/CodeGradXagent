@@ -48,6 +48,7 @@ describe("CodeGradXagent process Job", function () {
             "--counter",  700,
             "--follow"
         ]).then(function (exercise) {
+            //console.log(exercise);//DEBUG
             expect(exercise).toBeDefined();
             expect(exercise.pseudojobs).toBeDefined();
             expect(exercise.pseudojobs.perfect).toBeDefined();
