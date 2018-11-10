@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Time-stamp: "2018-11-10 15:08:59 queinnec"
+// Time-stamp: "2018-11-10 15:23:05 queinnec"
 
 /**
 
@@ -729,53 +729,53 @@ CodeGradX.Agent.prototype.fetchJobs = function (batch) {
 
 CodeGradX.Agent.prototype.processBatch = function () {
     const agent = this;
-    const exercise = new CodeGradX.Exercise({
-        safecookie: agent.commands.options.exercise
-    });
-    function showProgress (parameters) {
-        const batch = parameters.batch;
-        if ( batch ) {
-            agent.debug("Marked jobs:", batch.finishedjobs, 
-                        '/', (batch.totaljobs || '?'),
-                        '   still waiting...');
-            //agent.state.log.show();
-            // Fetch job reports for already marked jobs:
-            agent.fetchJobs(batch);
-        } else {
-            agent.debug("Waiting...", parameters.i);
-        }
-    }
-    const parameters = {
-        progress: showProgress
-    };
-    if ( agent.commands.options.timeout ) {
-        parameters.step = agent.commands.options.timeout;
-    }
-    if ( agent.commands.options.retry ) {
-        parameters.attempts = agent.commands.options.retry;
-    }
-    function cannotSendBatch (reason) {
-        agent.state.log.debug("Could not send batch file");
-        throw reason;
-    }
-    function getBatchReport (batch) {
-        agent.debug("Batch sent, known as", batch.batchid);
-        return agent.writeReport(batch.responseXML, 
-                                 'multiJobSubmittedReport', 
-                                 'xml')
-            .then(function () {
-                agent.debug("Waiting for final batch completion report...");
-                return batch.getFinalReport(parameters)
-                    .catch(_.bind(agent.cannotGetReport, agent))
-                    .then(_.bind(agent.storeBatchReport, agent))
-                    .catch(_.bind(agent.cannotStoreReport, agent));
-            }).catch(_.bind(agent.cannotStoreReport, agent));
-    }
-    agent.debug("Sending batch...");
-    return exercise
-        .sendBatch(agent.commands.options.stuff)
-        .catch(cannotSendBatch)
-        .then(getBatchReport);
+    return agent.guessExercise(agent.commands.options.exercise)
+        .then(function (exercise) {
+            function showProgress (parameters) {
+                const batch = parameters.batch;
+                if ( batch ) {
+                    agent.debug("Marked jobs:", batch.finishedjobs, 
+                                '/', (batch.totaljobs || '?'),
+                                '   still waiting...');
+                    //agent.state.log.show();
+                    // Fetch job reports for already marked jobs:
+                    agent.fetchJobs(batch);
+                } else {
+                    agent.debug("Waiting...", parameters.i);
+                }
+            }
+            const parameters = {
+                progress: showProgress
+            };
+            if ( agent.commands.options.timeout ) {
+                parameters.step = agent.commands.options.timeout;
+            }
+            if ( agent.commands.options.retry ) {
+                parameters.attempts = agent.commands.options.retry;
+            }
+            function cannotSendBatch (reason) {
+                agent.state.log.debug("Could not send batch file");
+                throw reason;
+            }
+            function getBatchReport (batch) {
+                agent.debug("Batch sent, known as", batch.batchid);
+                return agent.writeReport(batch.responseXML, 
+                                         'multiJobSubmittedReport', 
+                                         'xml')
+                    .then(function () {
+                        agent.debug("Waiting for final batch completion report...");
+                        return batch.getFinalReport(parameters)
+                            .catch(_.bind(agent.cannotGetReport, agent))
+                                .then(_.bind(agent.storeBatchReport, agent))
+                            .catch(_.bind(agent.cannotStoreReport, agent));
+                    }).catch(_.bind(agent.cannotStoreReport, agent));
+            }
+            agent.debug("Sending batch...");
+            return exercise
+                .sendBatch(agent.commands.options.stuff)
+                .catch(cannotSendBatch)
+                    .then(getBatchReport);
+        });
 };
 
 /** Send an Exercise and wait for the autocheck report
