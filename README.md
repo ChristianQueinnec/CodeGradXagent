@@ -19,8 +19,7 @@ npm install codegradxagent
 ```
 
 Caution, if you are an author and wants to use the virtual machine for
-authors, named [VMauthor
-](http://paracamplus.com/CodeGradX/VM/CodeGradX-VMauthor-latest.img.bz2).
+authors, named [VMauthor](https://codegradx.org/CodeGradX/VM/).
 You should also install the [codegradxvmauthor
 ](https://www.npmjs.com/package/codegradxvmauthor) module that configures the
 agent to use VMauthor rather than the real constellation of servers.

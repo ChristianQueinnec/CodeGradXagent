@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Time-stamp: "2018-06-14 17:44:06 queinnec"
+// Time-stamp: "2018-11-10 15:08:59 queinnec"
 
 /**
 
@@ -367,18 +367,20 @@ CodeGradX.Agent.prototype.getOptions = function (strings) {
             "send": false
         }
     };
+    //console.log(commands);//DEBUG
     try {
         if ( strings ) {
-            commands = this.parser.parse(strings);
+            commands = agent.parser.parse(strings);
         } else {
-            commands = this.parser.parseSystem();
+            commands = agent.parser.parseSystem();
         }
     } catch (exc) {
+        console.log(exc);//DEBUG
         agent.debug("getOptions failure", exc);
         throw("getOptions failure: " + exc);
     }
-    //console.log(commands);
-    this.commands = commands;
+    //console.log(commands);//DEBUG
+    agent.commands = commands;
     return commands;
 };
 
@@ -448,7 +450,7 @@ CodeGradX.Agent.prototype.guessExercise = function (string) {
 
     // file: should prefix an exerciseAuthorReport XML file:
     // FUTURE: allow file:(.*)#(\d+)
-    let results = string.match(/^file:(.*)$/);
+    let results = string.match(/^file:(.*)(#(\d+))?$/);
     if ( results ) {
         const file = results[1];
         index = results[3] || 0;
@@ -484,10 +486,16 @@ CodeGradX.Agent.prototype.guessExercise = function (string) {
             });
         });
     }
-    exercise = new CodeGradX.Exercise({
-        safecookie: string
-    });
-    return when(exercise);
+
+    results = string.match(/^U.{100,}$/);
+    if ( results ) {
+        exercise = new CodeGradX.Exercise({
+            safecookie: string
+        });
+        return when(exercise);
+    }
+
+    return when.reject(`Cannot decipher ${string}`);
 };
 
 /** Send a Job and wait for the marking report
