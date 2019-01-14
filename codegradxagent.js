@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Time-stamp: "2018-11-10 15:23:05 queinnec"
+// Time-stamp: "2019-01-14 17:56:34 queinnec"
 
 /**
 
@@ -34,7 +34,7 @@ const _ = (function () {
     const forEach = require('lodash/forEach');
     return { endsWith, bind, isFunction, forEach };
 })();
-const CodeGradX = require('codegradxlib');
+const CodeGradX = require('codegradxlib4node');
 
 // Exports what CodeGradX exports:
 module.exports = CodeGradX;
